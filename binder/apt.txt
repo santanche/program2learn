@@ -3,4 +3,4 @@ guile-3.0-dev
 automake
 build-essential
 libzmq3-dev
-guile-json-4
+guile-json
