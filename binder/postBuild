@@ -13,17 +13,29 @@ cd ..
 
 
 # --- Part 2: Manually Install the Jupyter Guile Kernel ---
-# This section is now corrected to copy the files to the right place.
+# This section now creates a corrected kernel.json file.
 KERNEL_DIR="$HOME/.local/share/jupyter/kernels/guile"
 mkdir -p "$KERNEL_DIR"
 
-# Clone the kernel into a temporary directory
+# Clone the repository to get the guile-jupyter-kernel.scm.scm script
 git clone https://github.com/jerry40/guile-kernel.git /tmp/guile-kernel
+cp /tmp/guile-kernel/src/guile-jupyter-kernel.scm.scm "$KERNEL_DIR/"
 
-# Copy the essential kernel files (kernel.json and the scheme script)
-# from the 'src' sub-folder into the final kernel directory.
-cp /tmp/guile-kernel/src/kernel.json "$KERNEL_DIR/"
-cp /tmp/guile-kernel/src/guile-jupyter-kernel.scm "$KERNEL_DIR/"
+# Create a new, corrected kernel.json that uses the special {kernel_dir}
+# placeholder. Jupyter replaces this with the absolute path at runtime,
+# ensuring the kernel.scm script can always be found.
+cat > "$KERNEL_DIR/kernel.json" << EOF
+{
+ "argv": [
+  "guile",
+  "{kernel_dir}/guile-jupyter-kernel.scm.scm",
+  "-f",
+  "{connection_file}"
+ ],
+ "display_name": "Guile",
+ "language": "scheme"
+}
+EOF
 
 # Clean up the temporary clone
 rm -rf /tmp/guile-kernel
