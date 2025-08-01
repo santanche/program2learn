@@ -1,3 +1,4 @@
+git
 guile-3.0
 guile-3.0-dev
 automake
