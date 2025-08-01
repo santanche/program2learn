@@ -2,7 +2,7 @@
 set -e
 
 # --- Part 1: Install guile-simple-zmq locally ---
-# This part was working correctly and installs the dependency to your home directory.
+# This part is correct and unchanged.
 git clone https://github.com/jerry40/guile-simple-zmq.git
 cd guile-simple-zmq
 autoreconf -vif
@@ -13,14 +13,24 @@ cd ..
 
 
 # --- Part 2: Manually Install the Jupyter Guile Kernel ---
-# This replicates the Dockerfile logic by cloning the kernel into the correct directory.
+# This section is now corrected to copy the files to the right place.
 KERNEL_DIR="$HOME/.local/share/jupyter/kernels/guile"
 mkdir -p "$KERNEL_DIR"
-git clone https://github.com/jerry40/guile-kernel.git "$KERNEL_DIR"
+
+# Clone the kernel into a temporary directory
+git clone https://github.com/jerry40/guile-kernel.git /tmp/guile-kernel
+
+# Copy the essential kernel files (kernel.json and the scheme script)
+# from the 'src' sub-folder into the final kernel directory.
+cp /tmp/guile-kernel/src/kernel.json "$KERNEL_DIR/"
+cp /tmp/guile-kernel/src/guile_kernel.scm "$KERNEL_DIR/"
+
+# Clean up the temporary clone
+rm -rf /tmp/guile-kernel
 
 
 # --- Part 3: Configure the Environment ---
-# This startup script is still needed to tell Guile where to find guile-simple-zmq.
+# This part is correct and unchanged.
 STARTUP_FILE=.binder/start
 mkdir -p .binder
 echo '#!/bin/bash' > $STARTUP_FILE
