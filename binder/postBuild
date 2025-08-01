@@ -2,7 +2,6 @@
 set -e
 
 # --- Part 1: Install guile-simple-zmq locally ---
-# This part is correct and unchanged.
 git clone https://github.com/jerry40/guile-simple-zmq.git
 cd guile-simple-zmq
 autoreconf -vif
@@ -13,38 +12,21 @@ cd ..
 
 
 # --- Part 2: Manually Install the Jupyter Guile Kernel ---
-# This section now creates a corrected kernel.json file.
 KERNEL_DIR="$HOME/.local/share/jupyter/kernels/guile"
 mkdir -p "$KERNEL_DIR"
-
-# Clone the repository to get the guile-jupyter-kernel.scm script
 git clone https://github.com/jerry40/guile-kernel.git /tmp/guile-kernel
 cp /tmp/guile-kernel/src/guile-jupyter-kernel.scm "$KERNEL_DIR/"
-
-# Create a new, corrected kernel.json that uses the special {kernel_dir}
-# placeholder. Jupyter replaces this with the absolute path at runtime,
-# ensuring the kernel.scm script can always be found.
-cat > "$KERNEL_DIR/kernel.json" << EOF
-{
- "argv": [
-  "guile",
-  "{kernel_dir}/guile-jupyter-kernel.scm",
-  "-f",
-  "{connection_file}"
- ],
- "display_name": "Guile",
- "language": "scheme"
-}
-EOF
-
-# Clean up the temporary clone
+cp /tmp/guile-kernel/src/kernel.json "$KERNEL_DIR/"
 rm -rf /tmp/guile-kernel
 
 
-# --- Part 3: Configure the Environment ---
-# This part is correct and unchanged.
+# --- Part 3: Configure and DIAGNOSE the Environment ---
 STARTUP_FILE=.binder/start
 mkdir -p .binder
 echo '#!/bin/bash' > $STARTUP_FILE
+# Add these logging commands to see the environment variables at startup
+echo 'echo "--- ENV LOG AT STARTUP ---" > /tmp/environment.log' >> $STARTUP_FILE
+echo 'env | sort >> /tmp/environment.log' >> $STARTUP_FILE
+# Set the paths
 echo 'export GUILE_LOAD_PATH="$HOME/.local/share/guile/site/3.0${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH"' >> $STARTUP_FILE
 echo 'export LD_LIBRARY_PATH="$HOME/.local/lib${LD_LIBRARY_PATH:+:}$LD_LIBRARY_PATH"' >> $STARTUP_FILE
