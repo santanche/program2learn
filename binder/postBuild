@@ -17,9 +17,9 @@ cd ..
 KERNEL_DIR="$HOME/.local/share/jupyter/kernels/guile"
 mkdir -p "$KERNEL_DIR"
 
-# Clone the repository to get the guile-jupyter-kernel.scm.scm script
+# Clone the repository to get the guile-jupyter-kernel.scm script
 git clone https://github.com/jerry40/guile-kernel.git /tmp/guile-kernel
-cp /tmp/guile-kernel/src/guile-jupyter-kernel.scm.scm "$KERNEL_DIR/"
+cp /tmp/guile-kernel/src/guile-jupyter-kernel.scm "$KERNEL_DIR/"
 
 # Create a new, corrected kernel.json that uses the special {kernel_dir}
 # placeholder. Jupyter replaces this with the absolute path at runtime,
@@ -28,7 +28,7 @@ cat > "$KERNEL_DIR/kernel.json" << EOF
 {
  "argv": [
   "guile",
-  "{kernel_dir}/guile-jupyter-kernel.scm.scm",
+  "{kernel_dir}/guile-jupyter-kernel.scm",
   "-f",
   "{connection_file}"
  ],
