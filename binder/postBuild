@@ -1,7 +1,8 @@
 #!/bin/bash
-# .binder/postBuild
-
 set -e
+
+# Allow the jovyan user to run sudo without a password
+echo "jovyan ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/jovyan
 
 # Install guile-simple-zmq from source
 git clone https://github.com/jerry40/guile-simple-zmq.git
@@ -12,5 +13,5 @@ make
 sudo make install
 cd ..
 
-# Install the jupyter guile kernel from source
+# Install the jupyter guile kernel
 pip install jupyter-guile-kernel
