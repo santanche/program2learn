@@ -1,17 +1,27 @@
 #!/bin/bash
 set -e
 
-# Allow the jovyan user to run sudo without a password
-echo "jovyan ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/jovyan
-
-# Install guile-simple-zmq from source
+# --- Part 1: Install guile-simple-zmq locally ---
+# We configure it to install into the user's home directory to avoid permission errors.
 git clone https://github.com/jerry40/guile-simple-zmq.git
 cd guile-simple-zmq
 autoreconf -vif
-./configure
+./configure --prefix=$HOME/.local
 make
-sudo make install
+make install
 cd ..
 
-# Install the jupyter guile kernel
+
+# --- Part 2: Install the Jupyter Kernel ---
 pip install jupyter-guile-kernel
+
+
+# --- Part 3: Configure the environment for Jupyter ---
+# Create a startup script that tells Guile and the system where to find the
+# libraries we just installed in our local directory.
+STARTUP_FILE=.binder/start
+
+mkdir -p .binder
+echo '#!/bin/bash' > $STARTUP_FILE
+echo 'export GUILE_LOAD_PATH="$HOME/.local/share/guile/site/3.0${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH"' >> $STARTUP_FILE
+echo 'export LD_LIBRARY_PATH="$HOME/.local/lib${LD_LIBRARY_PATH:+:}$LD_LIBRARY_PATH"' >> $STARTUP_FILE
