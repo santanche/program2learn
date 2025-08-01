@@ -9,7 +9,7 @@ cd guile-simple-zmq
 autoreconf -vif
 ./configure
 make
-sudo make install
+make install
 cd ..
 
 # Install the jupyter guile kernel from source
