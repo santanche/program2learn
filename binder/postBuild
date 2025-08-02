@@ -1,16 +1,78 @@
 #!/bin/bash
-# .binder/postBuild
-
+# Exit script if any command fails
 set -e
 
-# Install guile-simple-zmq from source
+echo "--- 🚀 Starting Guile Kernel setup for Binder ---"
+
+# Define a local installation directory since we don't have sudo
+INSTALL_PREFIX="$HOME/.local"
+
+# Ensure the necessary environment variables are set for the build process
+export PKG_CONFIG_PATH="$INSTALL_PREFIX/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig"
+export GUILE_LOAD_PATH="$INSTALL_PREFIX/share/guile/site/3.0${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH"
+
+# --- Create a workspace for building libraries ---
+echo "--- 📂 Creating a temporary 'lib' directory for source files ---"
+mkdir lib
+cd lib
+
+# --- Install guile-json ---
+echo "--- 📦 Installing guile-json ---"
+wget https://openbsd.c3sl.ufpr.br/savannah-nongnu/guile-json/guile-json-4.7.1.tar.gz
+tar -xzf guile-json-4.7.1.tar.gz
+cd guile-json-4.7.1
+./configure --prefix="$INSTALL_PREFIX"
+make
+make install
+cd ..
+# **Cleanup guile-json source folder and tarball**
+echo "--- 🧹 Cleaning up guile-json files ---"
+rm -rf guile-json-4.7.1 guile-json-4.7.1.tar.gz
+
+# --- Install guile-simple-zmq ---
+echo "--- 📦 Installing guile-simple-zmq ---"
 git clone https://github.com/jerry40/guile-simple-zmq.git
 cd guile-simple-zmq
-autoreconf -vif
-./configure
+autoreconf --verbose --install --force
+./configure --prefix="$INSTALL_PREFIX"
 make
-sudo make install
+make install
+cd ..
+# **Cleanup guile-simple-zmq source folder**
+echo "--- 🧹 Cleaning up guile-simple-zmq files ---"
+rm -rf guile-simple-zmq
+
+# --- Return to the root project directory ---
 cd ..
 
-# Install the jupyter guile kernel from source
-pip install jupyter-guile-kernel
+# --- Configure the Jupyter Kernel ---
+echo "--- ⚙️  Configuring Jupyter kernel ---"
+echo "--- 📥 Downloading the Guile Kernel source ---"
+git clone https://github.com/jerry40/guile-kernel.git
+
+KERNEL_DIR="$HOME/.local/share/jupyter/kernels/guile"
+mkdir -p "$KERNEL_DIR"
+
+# Copy ALL .scm files from the src directory to the kernel directory
+cp guile-kernel/src/*.scm "$KERNEL_DIR/"
+
+# **Cleanup the kernel source folder after copying files**
+echo "--- 🧹 Cleaning up kernel source files ---"
+rm -rf guile-kernel lib
+
+# Create the kernel.json file, dynamically inserting the correct path.
+cat <<EOF > "$KERNEL_DIR/kernel.json"
+{
+    "argv": [
+        "guile",
+        "-L", "$INSTALL_PREFIX/share/guile/site/3.0",
+        "-s", "$KERNEL_DIR/guile-jupyter-kernel.scm",
+        "--",
+        "{connection_file}"
+    ],
+    "display_name": "Guile",
+    "language": "scheme"
+}
+EOF
+
+echo "--- ✨ Guile Kernel setup complete! ---"

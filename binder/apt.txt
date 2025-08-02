@@ -1,7 +1,17 @@
-sudo
+# Guile Scheme interpreter and development files
 guile-3.0
 guile-3.0-dev
-automake
-build-essential
+
+# ZeroMQ library and headers
 libzmq3-dev
-guile-json
+
+# Standard build tools
+build-essential
+pkg-config
+autoconf
+automake
+libtool
+
+# Tools for downloading and cloning
+git
+wget
