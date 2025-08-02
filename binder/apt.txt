@@ -1,0 +1,17 @@
+# Guile Scheme interpreter and development files
+guile-3.0
+guile-3.0-dev
+
+# ZeroMQ library and headers
+libzmq3-dev
+
+# Standard build tools
+build-essential
+pkg-config
+autoconf
+automake
+libtool
+
+# Tools for downloading and cloning
+git
+wget
