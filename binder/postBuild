@@ -18,7 +18,7 @@ cd lib
 
 # --- Install guile-json ---
 echo "--- 📦 Installing guile-json ---"
-wget https://ftpmirror.gnu.org/guile-json/guile-json-4.7.1.tar.gz
+wget https://openbsd.c3sl.ufpr.br/savannah-nongnu/guile-json/guile-json-4.7.1.tar.gz
 tar -xzf guile-json-4.7.1.tar.gz
 cd guile-json-4.7.1
 ./configure --prefix="$INSTALL_PREFIX"
