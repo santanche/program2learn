@@ -13,9 +13,9 @@ export PKG_CONFIG_PATH="$INSTALL_PREFIX/lib/pkgconfig${PKG_CONFIG_PATH:+:}$PKG_C
 
 # --- Install guile-json ---
 echo "--- 📦 Installing guile-json ---"
-wget https://ftpmirror.gnu.org/guile-json/guile-json-4.7.1.tar.gz
-tar -xzf guile-json-4.7.1.tar.gz
-cd guile-json-4.7.1
+wget http://download.savannah.gnu.org/releases/guile-json/guile-json-3.2.0.tar.gz
+tar -xzf guile-json-3.2.0.tar.gz
+cd guile-json-3.2.0
 ./configure --prefix="$INSTALL_PREFIX"
 make
 make install
