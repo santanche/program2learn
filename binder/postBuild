@@ -7,14 +7,13 @@ echo "--- 🚀 Starting Guile Kernel setup for Binder ---"
 # Define a local installation directory since we don't have sudo
 INSTALL_PREFIX="$HOME/.local"
 
-# **Ensure the necessary environment variables are set for the build process**
-# **This line is the FIX: It explicitly adds the system's pkg-config path.**
+# Ensure the necessary environment variables are set for the build process
 export PKG_CONFIG_PATH="$INSTALL_PREFIX/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig"
 export GUILE_LOAD_PATH="$INSTALL_PREFIX/share/guile/site/3.0${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH"
 
 # --- Install guile-json ---
 echo "--- 📦 Installing guile-json ---"
-wget https://openbsd.c3sl.ufpr.br/savannah-nongnu/guile-json/guile-json-4.7.1.tar.gz
+wget https://ftpmirror.gnu.org/guile-json/guile-json-4.7.1.tar.gz
 tar -xzf guile-json-4.7.1.tar.gz
 cd guile-json-4.7.1
 ./configure --prefix="$INSTALL_PREFIX"
@@ -34,14 +33,19 @@ cd ..
 
 # --- Configure the Jupyter Kernel ---
 echo "--- ⚙️  Configuring Jupyter kernel ---"
+
+# **FIX: Clone the correct kernel repository**
+echo "--- 📥 Downloading the Guile Kernel source ---"
+git clone https://github.com/jerry40/guile-kernel.git
+
 KERNEL_DIR="$HOME/.local/share/jupyter/kernels/guile"
 mkdir -p "$KERNEL_DIR"
 
-# Copy the kernel's scheme script into the kernel directory
-cp src/guile-jupyter-kernel.scm "$KERNEL_DIR/"
+# **FIX: Copy ALL .scm files from the src directory to the kernel directory**
+# This ensures the main kernel script can find its helper modules.
+cp guile-kernel/src/*.scm "$KERNEL_DIR/"
 
 # Create the kernel.json file, dynamically inserting the correct path.
-# The -L flag explicitly tells guile where to find the libraries we just installed.
 cat <<EOF > "$KERNEL_DIR/kernel.json"
 {
     "argv": [
