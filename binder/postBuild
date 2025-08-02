@@ -1,34 +1,58 @@
 #!/bin/bash
+# Exit script if any command fails
 set -e
 
-# --- Part 1: Install guile-simple-zmq locally ---
-git clone https://github.com/jerry40/guile-simple-zmq.git
-cd guile-simple-zmq
-autoreconf -vif
-./configure --prefix=$HOME/.local
+echo "--- 🚀 Starting Guile Kernel setup for Binder ---"
+
+# Define a local installation directory since we don't have sudo
+INSTALL_PREFIX="$HOME/.local"
+
+# Ensure the necessary environment variables are set for the build process
+export GUILE_LOAD_PATH="$INSTALL_PREFIX/share/guile/site/3.0${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH"
+export PKG_CONFIG_PATH="$INSTALL_PREFIX/lib/pkgconfig${PKG_CONFIG_PATH:+:}$PKG_CONFIG_PATH"
+
+# --- Install guile-json ---
+echo "--- 📦 Installing guile-json ---"
+wget https://ftpmirror.gnu.org/guile-json/guile-json-4.7.1.tar.gz
+tar -xzf guile-json-4.7.1.tar.gz
+cd guile-json-4.7.1
+./configure --prefix="$INSTALL_PREFIX"
 make
 make install
 cd ..
 
+# --- Install guile-simple-zmq ---
+echo "--- 📦 Installing guile-simple-zmq ---"
+git clone https://github.com/jerry40/guile-simple-zmq.git
+cd guile-simple-zmq
+autoreconf --verbose --install --force
+./configure --prefix="$INSTALL_PREFIX"
+make
+make install
+cd ..
 
-# --- Part 2: Manually Install the Jupyter Guile Kernel ---
+# --- Configure the Jupyter Kernel ---
+echo "--- ⚙️  Configuring Jupyter kernel ---"
 KERNEL_DIR="$HOME/.local/share/jupyter/kernels/guile"
 mkdir -p "$KERNEL_DIR"
-git clone https://github.com/jerry40/guile-kernel.git /tmp/guile-kernel
-cp /tmp/guile-kernel/src/guile-jupyter-kernel.scm "$KERNEL_DIR/"
-cp /tmp/guile-kernel/src/kernel.json "$KERNEL_DIR/"
-rm -rf /tmp/guile-kernel
 
+# Copy the kernel's scheme script into the kernel directory
+cp src/guile-jupyter-kernel.scm "$KERNEL_DIR/"
 
-# --- Part 3: Configure the Environment ---
-STARTUP_FILE=.binder/start
-mkdir -p .binder
-echo '#!/bin/bash' > $STARTUP_FILE
-echo 'echo "--- ENV LOG AT STARTUP ---" > /tmp/environment.log' >> $STARTUP_FILE
-echo 'env | sort >> /tmp/environment.log' >> $STARTUP_FILE
-echo 'export GUILE_LOAD_PATH="$HOME/.local/share/guile/site/3.0${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH"' >> $STARTUP_FILE
-echo 'export LD_LIBRARY_PATH="$HOME/.local/lib${LD_LIBRARY_PATH:+:}$LD_LIBRARY_PATH"' >> $STARTUP_FILE
+# Create the kernel.json file, dynamically inserting the correct path.
+# The -L flag explicitly tells guile where to find the libraries we just installed.
+cat <<EOF > "$KERNEL_DIR/kernel.json"
+{
+    "argv": [
+        "guile",
+        "-L", "$INSTALL_PREFIX/share/guile/site/3.0",
+        "-s", "$KERNEL_DIR/guile-jupyter-kernel.scm",
+        "--",
+        "{connection_file}"
+    ],
+    "display_name": "Guile",
+    "language": "scheme"
+}
+EOF
 
-
-# --- Part 4: Make the startup script executable ---
-chmod +x $STARTUP_FILE
+echo "--- ✨ Guile Kernel setup complete! ---"

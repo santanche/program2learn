@@ -1,0 +1,34 @@
+#!/bin/bash
+set -e
+
+# --- Part 1: Install guile-simple-zmq locally ---
+git clone https://github.com/jerry40/guile-simple-zmq.git
+cd guile-simple-zmq
+autoreconf -vif
+./configure --prefix=$HOME/.local
+make
+make install
+cd ..
+
+
+# --- Part 2: Manually Install the Jupyter Guile Kernel ---
+KERNEL_DIR="$HOME/.local/share/jupyter/kernels/guile"
+mkdir -p "$KERNEL_DIR"
+git clone https://github.com/jerry40/guile-kernel.git /tmp/guile-kernel
+cp /tmp/guile-kernel/src/guile-jupyter-kernel.scm "$KERNEL_DIR/"
+cp /tmp/guile-kernel/src/kernel.json "$KERNEL_DIR/"
+rm -rf /tmp/guile-kernel
+
+
+# --- Part 3: Configure the Environment ---
+STARTUP_FILE=.binder/start
+mkdir -p .binder
+echo '#!/bin/bash' > $STARTUP_FILE
+echo 'echo "--- ENV LOG AT STARTUP ---" > /tmp/environment.log' >> $STARTUP_FILE
+echo 'env | sort >> /tmp/environment.log' >> $STARTUP_FILE
+echo 'export GUILE_LOAD_PATH="$HOME/.local/share/guile/site/3.0${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH"' >> $STARTUP_FILE
+echo 'export LD_LIBRARY_PATH="$HOME/.local/lib${LD_LIBRARY_PATH:+:}$LD_LIBRARY_PATH"' >> $STARTUP_FILE
+
+
+# --- Part 4: Make the startup script executable ---
+chmod +x $STARTUP_FILE
