@@ -1,0 +1,19 @@
+services:
+  harena-dbms:
+    image: guile-kernel
+    container_name: jupyter-guile
+    volumes:
+      - program2learn:/home/guile_user/program2learn
+    restart: on-failure:5
+    shm_size: 128mb
+    ports:
+      - "8888:8888"
+
+volumes:
+  program2learn:
+    driver: "local"
+    driver_opts:
+      type: "none"
+      device: "/home/user/git/program2learn/"
+      o: "bind"
+
