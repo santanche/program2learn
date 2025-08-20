@@ -9,7 +9,7 @@ Examples and exercises in this lab are presented as [Jupyter Notebooks](http://j
 
 The links below run the Jupyter platform with the GNU Guile Scheme kernel:
 
-* Latest version available [![launch @ mybinder.org][badge-jupyterlab-mybinder-org]](https://mybinder.org/v2/gh/santanche/program2learn/0.0.1)
+* Latest version available [![launch @ mybinder.org][badge-jupyterlab-mybinder-org]](https://mybinder.org/v2/gh/santanche/program2learn/0.1.0)
   * mounts the latest commit - has the latest repository updates, but sometimes still needs a test.
 
 ## Install a Local Guile over Jupyter
