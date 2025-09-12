@@ -5,6 +5,9 @@ guile-3.0-dev
 # ZeroMQ library and headers
 libzmq3-dev
 
+# JDK
+openjdk-17-jdk
+
 # Standard build tools
 build-essential
 pkg-config
