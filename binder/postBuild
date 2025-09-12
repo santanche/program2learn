@@ -42,6 +42,25 @@ cd ..
 echo "--- 🧹 Cleaning up guile-simple-zmq files ---"
 rm -rf guile-simple-zmq
 
+# Define the Clojupyter version and JAR filename
+CLOJUPYTER_VERSION="0.4.332"
+JAR_FILE="clojupyter-${CLOJUPYTER_VERSION}-standalone.jar"
+DOWNLOAD_URL="https://github.com/clojupyter/clojupyter/releases/download/v${CLOJUPYTER_VERSION}/${JAR_FILE}"
+
+# Download the uberjar from GitHub releases
+echo "--- Downloading Clojupyter ${CLOJUPYTER_VERSION} ---"
+wget ${DOWNLOAD_URL}
+
+# Check if the download was successful
+if [ ! -f "$JAR_FILE" ]; then
+    echo "--- ERROR: Failed to download Clojupyter JAR file. ---"
+    exit 1
+fi
+
+# Use the downloaded JAR to install the kernel for Jupyter
+echo "--- Installing Clojupyter kernel ---"
+java -cp ${JAR_FILE} clojupyter.cmdline install --ident clojure
+
 # --- Return to the root project directory ---
 cd ..
 
