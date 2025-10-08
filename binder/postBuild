@@ -95,11 +95,12 @@ cat <<EOF > "$KERNEL_DIR/kernel.json"
 EOF
 
 echo "--- ✨ Guile Kernel setup complete! ---"
+
 echo "--- Setting up Clojure environment for Datomic... ---"
 # Install Leiningen for Clojure project management
 curl -o /tmp/lein https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
-sudo mv /tmp/lein /usr/local/bin/lein
-sudo chmod +x /usr/local/bin/lein
+mv /tmp/lein /usr/local/bin/lein
+chmod +x /usr/local/bin/lein
 
 # Create project directory structure
 mkdir -p src/datomic_binder
