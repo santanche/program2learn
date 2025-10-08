@@ -1,0 +1,6 @@
+name: datomic-binder-env
+channels:
+  - conda-forge
+dependencies:
+  - openjdk=11
+  - clojure

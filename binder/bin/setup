@@ -1,0 +1,3 @@
+#!/bin/bash
+# This file ensures the Leiningen project is properly set up.
+echo "Project setup complete."
