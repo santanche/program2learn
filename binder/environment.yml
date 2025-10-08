@@ -3,4 +3,4 @@ channels:
   - conda-forge
 dependencies:
   - openjdk=11
-  - clojure
+  - clojure=1.11.1
