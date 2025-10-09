@@ -1,0 +1,16 @@
+DISEASES AND THEIR SYMPTOMS
+Format: disease(severity): symptom1, symptom2, ..., symptomN
+
+flu(mild): fever, cough, headache, fatigue, muscle_aches
+common_cold(mild): cough, sneezing, runny_nose, sore_throat
+pneumonia(severe): fever, cough, shortness_of_breath, chest_pain, fatigue
+covid_19(severe): fever, cough, fatigue, shortness_of_breath, loss_of_taste
+measles(moderate): fever, cough, runny_nose, rash
+strep_throat(moderate): fever, sore_throat, headache
+heart_attack(critical): chest_pain, shortness_of_breath, nausea
+anxiety(mild): shortness_of_breath, nausea
+migraine(moderate): headache, nausea, sensitivity_to_light
+food_poisoning(moderate): nausea, vomiting, diarrhea, abdominal_pain
+allergic_reaction(severe): rash, swelling, difficulty_breathing
+bronchitis(moderate): cough, chest_discomfort, fatigue, shortness_of_breath
+mononucleosis(moderate): fatigue, sore_throat, fever, swollen_glands
