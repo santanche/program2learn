@@ -1,0 +1,41 @@
+@prefix : <http://example.org/medical#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+# Symptoms with labels
+:blindness rdf:type :Symptom ;
+    rdfs:label "Blindness" .
+
+:obesity rdf:type :Symptom ;
+    rdfs:label "Obesity" .
+
+# Diseases with labels
+:diabetes_mellitus rdf:type :Disease ;
+    rdfs:label "Diabetes Mellitus" .
+
+:myocardial_infarction rdf:type :Disease ;
+    rdfs:label "Myocardial Infarction" .
+
+:uveitis rdf:type :Disease ;
+    rdfs:label "Uveitis" .
+
+# Disease-Symptom relationships with weights
+:diabetes_mellitus :has [
+    :symptom :blindness ;
+    :weight 31.85
+] .
+
+:diabetes_mellitus :has [
+    :symptom :obesity ;
+    :weight 2709.96
+] .
+
+:myocardial_infarction :has [
+    :symptom :obesity ;
+    :weight 233.95
+] .
+
+:uveitis :has [
+    :symptom :blindness ;
+    :weight 49.42
+] .
