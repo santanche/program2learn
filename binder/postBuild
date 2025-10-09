@@ -96,18 +96,14 @@ EOF
 
 echo "--- ✨ Guile Kernel setup complete! ---"
 
-echo "=== Setting up Clojure and Datomic environment ==="
-
-# Install Leiningen in user's home directory
+# Install Leiningen and ensure it's on the PATH
 echo "Installing Leiningen..."
 curl -o $HOME/lein https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
 chmod +x $HOME/lein
 
-# Add to PATH for current session
-export PATH="$HOME:$PATH"
-
-# Self-install leiningen
+# Self-install leiningen and add to ~/.bashrc for persistence across sessions
 echo "Running Leiningen self-install..."
+export PATH="$HOME:$PATH"
 $HOME/lein version
 
 # Create necessary directories for our project
@@ -115,5 +111,3 @@ echo "Setting up project structure..."
 mkdir -p src/datomic_binder
 
 echo "=== Clojure environment setup complete! ==="
-echo "To run the Datomic demo, open a terminal and run:"
-echo "lein run"
