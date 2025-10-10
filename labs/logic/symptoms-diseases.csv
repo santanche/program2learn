@@ -1,0 +1,41 @@
+Disease,Symptom,Weight
+Hypertension,Headache,0.45
+Hypertension,Dizziness,0.30
+Hypertension,Blurred vision,0.25
+Hypertension,Tiredness,0.20
+Migraine,Headache,0.80
+Migraine,Nausea,0.50
+Migraine,Photophobia,0.60
+Migraine,Dizziness,0.35
+Stroke,Headache,0.60
+Stroke,Dizziness,0.55
+Stroke,Weakness (one side),0.70
+Stroke,Slurred speech,0.65
+Anemia,Fatigue,0.70
+Anemia,Dizziness,0.40
+Anemia,Shortness of breath,0.50
+Anemia,Pallor,0.45
+Heart Failure,Shortness of breath,0.65
+Heart Failure,Edema,0.55
+Heart Failure,Fatigue,0.45
+Heart Failure,Cough,0.30
+Chronic Kidney Disease,Edema,0.50
+Chronic Kidney Disease,Fatigue,0.35
+Chronic Kidney Disease,Shortness of breath,0.40
+Chronic Kidney Disease,Nausea,0.25
+Pneumonia,Cough,0.70
+Pneumonia,Shortness of breath,0.60
+Pneumonia,Chest pain,0.50
+Pneumonia,Fatigue,0.30
+COPD,Cough,0.65
+COPD,Shortness of breath,0.60
+COPD,Wheezing,0.55
+COPD,Fatigue,0.25
+Asthma,Shortness of breath,0.55
+Asthma,Cough,0.50
+Asthma,Wheezing,0.60
+Asthma,Chest tightness,0.45
+Diabetes Mellitus,Fatigue,0.40
+Diabetes Mellitus,Blurred vision,0.35
+Diabetes Mellitus,Nausea,0.30
+Diabetes Mellitus,Dizziness,0.20
