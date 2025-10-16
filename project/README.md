@@ -20,3 +20,5 @@ Veja exemplo de apresentação em:
 
 A linguagem deve explorar o mecanismo de macro para se aproximar de uma sintaxe mais ligada com o domínio que se pretende representar.
 
+O trabalho deve ser entregue conforme o [Template](template.md).
+
