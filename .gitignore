@@ -1,3 +1,4 @@
 temp/
 .clj-kondo
 .lsp
+.nrepl*
