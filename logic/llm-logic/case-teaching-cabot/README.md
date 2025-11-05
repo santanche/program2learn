@@ -1,3 +1,6 @@
-# Richard Cabot book
+# Case Teaching in Medicine
+*Richard Cabot*
 
-Case teaching in medicine; by Cabot, Richard C. (Richard Clarke), 1868-1939.
+Cabot, R. C. (1906). Case teaching in medicine. D. C. Heath & co. https://catalog.hathitrust.org/Record/001587029
+
+Archive: https://archive.org/details/caseteachinginm00unkngoog/
