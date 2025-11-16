@@ -1,4 +1,6 @@
-# Template da Entrega Parcial
+# Template da Entrega Final
+
+Na entrega final a equipe deve apresentar pelo menos os tópicos sugeridos abaixo. Alguns deles já foram apresentados na primeira etapa e devem ser reapresentados -- iguais, se não houve mudança, ou revisados.
 
 Segue abaixo o modelo de como deve ser apresentado e documentado o projeto. Há partes do modelo a seguir que têm uma marcação específica indicando que **não devem ser literalmente transcritas**:
 
@@ -23,7 +25,7 @@ No modelo a seguir são colocados exemplos ilustrativos, que serão substituído
 
 ## Slides
 
-> Coloque aqui o link para o PDF da apresentação.
+> Coloque aqui o link para o PDF da apresentação final.
 
 ## Notebook
 
@@ -36,6 +38,8 @@ No modelo a seguir são colocados exemplos ilustrativos, que serão substituído
 ## Exemplos Selecionados
 
 > Coloque um conjunto de exemplos selecionados e os resultados alcançados.
+>
+> O ideal é que os exemplos sejam apresentados e possam ser executados diretamente no notebook.
 
 ## Discussão
 
