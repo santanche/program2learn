@@ -15,8 +15,8 @@ Uma vez escolhido o domínio, a DSL deve possuir as seguintes características:
   * macros higiênicas.
 
 Veja exemplo de apresentação em:
-* [Criando Primitivas SQL-like](macros-abstraction.ipynb)
-* [Mecanismos para Macros](macros-mechanisms.ipynb)
+* [Criando Primitivas SQL-like](project-1/macros-abstraction.ipynb)
+* [Mecanismos para Macros](project-1/macros-mechanisms.ipynb)
 
 A linguagem deve explorar o mecanismo de macro para se aproximar de uma sintaxe mais ligada com o domínio que se pretende representar.
 
