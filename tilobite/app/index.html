@@ -1,331 +1,713 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Micro Agent – Final Stable Version</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trilobite Agent</title>
 <style>
-body {
-    font-family: monospace;
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+
+  :root {
+    --sand: #d4a96a;
+    --sand-dark: #b8894a;
+    --rock: #5a5a6e;
+    --rock-dark: #3a3a4e;
+    --bg: #0d0d1a;
+    --panel: #13131f;
+    --border: #2a2a4a;
+    --accent: #00e5ff;
+    --accent2: #ff6b35;
+    --green: #39ff14;
+    --text: #c8d0e8;
+    --text-dim: #6a7090;
+    --error: #ff4444;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    height: 100vh;
     display: flex;
-    gap: 20px;
-}
+    flex-direction: column;
+    overflow: hidden;
+  }
 
-#leftPanel { width: 350px; }
+  header {
+    padding: 8px 20px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+  }
 
-textarea {
-    width: 100%;
-    height: 220px;
-}
+  header h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-shadow: 0 0 20px var(--accent);
+  }
 
-button {
-    width: 100%;
-    margin-top: 5px;
-    padding: 6px;
-}
+  header .subtitle {
+    color: var(--text-dim);
+    font-size: 11px;
+    letter-spacing: 2px;
+  }
 
-canvas {
-    border: 2px solid black;
+  .main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* LEFT PANEL */
+  .left-panel {
+    width: 320px;
+    flex-shrink: 0;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .section-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    padding: 10px 14px 6px;
+    border-bottom: 1px solid var(--border);
+    text-transform: uppercase;
+  }
+
+  #code-editor {
+    flex: 1;
+    background: #080810;
+    color: #a0ffa0;
+    border: none;
+    resize: none;
+    padding: 12px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    outline: none;
+    caret-color: var(--accent);
+  }
+
+  #code-editor::placeholder { color: #2a3a2a; }
+
+  .status-bar {
+    padding: 8px 14px;
+    font-size: 11px;
+    border-top: 1px solid var(--border);
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    flex-shrink: 0;
+  }
+  .status-dot.ok { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .status-dot.err { background: var(--error); box-shadow: 0 0 8px var(--error); }
+  .status-dot.run { background: var(--accent2); box-shadow: 0 0 8px var(--accent2); animation: blink 0.7s infinite; }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  #status-text { font-size: 11px; color: var(--text-dim); flex: 1; }
+  #status-text.err { color: var(--error); }
+  #status-text.ok { color: var(--green); }
+
+  .controls {
+    padding: 10px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  button {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    padding: 7px 12px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+  }
+
+  button:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 10px rgba(0,229,255,0.2); }
+  button.primary { border-color: var(--accent); color: var(--accent); }
+  button.danger { border-color: var(--accent2); color: var(--accent2); }
+  button:disabled { opacity: 0.3; cursor: not-allowed; }
+  button:disabled:hover { border-color: var(--border); color: var(--text); box-shadow: none; }
+
+  .sliders {
+    padding: 10px 14px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+
+  .slider-label {
+    width: 60px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 8px;
+    letter-spacing: 1px;
+  }
+
+  input[type=range] {
+    flex: 1;
+    accent-color: var(--accent);
+    height: 4px;
+  }
+
+  .slider-val {
+    width: 40px;
+    text-align: right;
+    color: var(--accent);
+  }
+
+  /* RIGHT: CANVAS AREA */
+  .canvas-area {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    background: #080810;
+  }
+
+  #grid-canvas {
+    position: absolute;
+    top: 0; left: 0;
     image-rendering: pixelated;
-}
+    cursor: crosshair;
+  }
+
+  .legend {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(13,13,26,0.85);
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    font-size: 10px;
+    color: var(--text-dim);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    backdrop-filter: blur(4px);
+  }
+
+  .legend-row { display: flex; align-items: center; gap: 8px; }
+  .legend-swatch { width: 14px; height: 14px; border: 1px solid #3a3a5a; }
+  .legend-sand { background: var(--sand); }
+  .legend-rock { background: var(--rock); }
+  .legend-trilobite { background: var(--accent); opacity: 0.8; }
+
+  .step-counter {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(13,13,26,0.85);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    color: var(--accent);
+    backdrop-filter: blur(4px);
+  }
 </style>
 </head>
 <body>
 
-<div id="leftPanel">
-<h3>Program</h3>
+<header>
+  <h1>TRILOBITE</h1>
+  <span class="subtitle">// PROGRAMMABLE AGENT ENV v1.0</span>
+</header>
 
-<textarea id="code">
-(
-  ?U F
-  ?B R
-)*
-</textarea>
+<div class="main">
+  <div class="left-panel">
+    <div class="section-label">Program Code</div>
+    <textarea id="code-editor" placeholder="// Type your program here&#10;// Example:&#10;(&#10;  ?U F&#10;  ?B R&#10;)*"></textarea>
 
-<button type="button" onclick="compileProgram()">Compile</button>
-<button type="button" onclick="run()">Run</button>
-<button type="button" onclick="pause()">Pause</button>
-<button type="button" onclick="step()">Step</button>
-<button type="button" onclick="resetWorld()">Reset</button>
+    <div class="status-bar">
+      <div class="status-dot" id="status-dot"></div>
+      <span id="status-text">ready</span>
+    </div>
 
-<label>Speed</label>
-<input type="range" min="50" max="1000" value="400" id="speedSlider">
+    <div class="controls">
+      <button class="primary" id="btn-compile">Compile</button>
+      <button id="btn-run" disabled>Run</button>
+      <button id="btn-stop" disabled>Stop</button>
+      <button id="btn-step" disabled>Step</button>
+      <button class="danger" id="btn-reset">Reset</button>
+    </div>
 
-<label>Zoom</label>
-<input type="range" min="16" max="64" value="32" id="zoomSlider">
+    <div class="sliders">
+      <div class="slider-row">
+        <span class="slider-label">Zoom</span>
+        <input type="range" id="zoom-slider" min="4" max="32" value="10" step="1">
+        <span class="slider-val" id="zoom-val">10px</span>
+      </div>
+      <div class="slider-row">
+        <span class="slider-label">Speed</span>
+        <input type="range" id="speed-slider" min="1" max="60" value="4" step="1">
+        <span class="slider-val" id="speed-val">4/s</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="canvas-area" id="canvas-area">
+    <canvas id="grid-canvas"></canvas>
+    <div class="step-counter">STEPS: <span id="step-count">0</span></div>
+    <div class="legend">
+      <div class="legend-row"><div class="legend-swatch legend-sand"></div> Sand (passable)</div>
+      <div class="legend-row"><div class="legend-swatch legend-rock"></div> Rock (blocked)</div>
+      <div class="legend-row"><div class="legend-swatch legend-trilobite"></div> Trilobite</div>
+    </div>
+  </div>
 </div>
 
-<canvas id="gridCanvas"></canvas>
-
 <script>
+// ─── CONFIG ─────────────────────────────────────────────────────────────────
+const SAND = 0, ROCK = 1;
+const DIRS = [{dx:0,dy:-1},{dx:1,dy:0},{dx:0,dy:1},{dx:-1,dy:0}]; // N E S W
+const DIR_NAMES = ['N','E','S','W'];
 
-// ===========================
-// GLOBAL STATE
-// ===========================
-
-const rows = 15;
-const cols = 15;
-
-let cellSize = 32;
+// ─── STATE ──────────────────────────────────────────────────────────────────
+let cellSize = 10;
+let stepsPerSec = 4;
+let cols, rows;
 let grid = [];
-let agent = {};
-let direction = 0;
-
-let controlStack = [];
+let savedGrid = [];
+let agentX, agentY, agentDir;
+let savedAgentX, savedAgentY, savedAgentDir;
+let compiled = null;
 let running = false;
-let timer = null;
+let runInterval = null;
+let stepCount = 0;
 
-const canvas = document.getElementById("gridCanvas");
-const ctx = canvas.getContext("2d");
-
-// ===========================
-// SPRITES
-// ===========================
-
-const trilobiteImg = new Image();
-const sandImg = new Image();
-const rockImg = new Image();
-
-trilobiteImg.src = "trilobite.png";
-sandImg.src = "sand.png";
-rockImg.src = "rock.png";
-
-// Wait for ALL images before starting
-Promise.all([
-    new Promise(res => trilobiteImg.onload = res),
-    new Promise(res => sandImg.onload = res),
-    new Promise(res => rockImg.onload = res)
-]).then(init);
-
-// ===========================
-// INITIALIZATION
-// ===========================
-
-function init() {
-    initGrid();
-    initAgent();
-    resizeCanvas();
-}
+// ─── CANVAS ─────────────────────────────────────────────────────────────────
+const canvas = document.getElementById('grid-canvas');
+const ctx = canvas.getContext('2d');
+const area = document.getElementById('canvas-area');
 
 function initGrid() {
-    grid = [];
-    for (let r=0; r<rows; r++) {
-        let row=[];
-        for (let c=0; c<cols; c++)
-            row.push("sand");
-        grid.push(row);
-    }
+  const W = area.clientWidth;
+  const H = area.clientHeight;
+  canvas.width = W;
+  canvas.height = H;
+  cols = Math.floor(W / cellSize);
+  rows = Math.floor(H / cellSize);
+  grid = Array.from({length: rows}, () => new Uint8Array(cols).fill(SAND));
+  agentX = Math.floor(cols / 2);
+  agentY = Math.floor(rows / 2);
+  agentDir = 0; // North
+  stepCount = 0;
+  document.getElementById('step-count').textContent = '0';
 }
 
-function initAgent() {
-    agent.row = Math.floor(rows/2);
-    agent.col = Math.floor(cols/2);
-    direction = 0;
+function saveState() {
+  savedGrid = grid.map(r => new Uint8Array(r));
+  savedAgentX = agentX;
+  savedAgentY = agentY;
+  savedAgentDir = agentDir;
 }
 
-function resizeCanvas(){
-    canvas.width = cols * cellSize;
-    canvas.height = rows * cellSize;
-    render();
+function restoreState() {
+  grid = savedGrid.map(r => new Uint8Array(r));
+  agentX = savedAgentX;
+  agentY = savedAgentY;
+  agentDir = savedAgentDir;
+  stepCount = 0;
+  document.getElementById('step-count').textContent = '0';
 }
 
-document.getElementById("zoomSlider")
-.addEventListener("input", e=>{
-    cellSize = parseInt(e.target.value);
-    resizeCanvas();
-});
-
-// ===========================
-// RENDER
-// ===========================
+// ─── RENDER ─────────────────────────────────────────────────────────────────
+const SAND_COLORS = ['#d4a96a','#c89a5a','#ddb570','#c8a060'];
+const ROCK_COLORS = ['#5a5a6e','#4e4e62','#626274','#545466'];
 
 function render() {
-
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    for (let r=0; r<rows; r++){
-        for (let c=0; c<cols; c++){
-            let img = grid[r][c]==="sand" ? sandImg : rockImg;
-            ctx.drawImage(img, c*cellSize, r*cellSize, cellSize, cellSize);
-        }
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      const c = (x + y) % 2;
+      ctx.fillStyle = grid[y][x] === SAND ? SAND_COLORS[c*2 + (y%2)] : ROCK_COLORS[c*2 + (y%2)];
+      ctx.fillRect(x*cellSize, y*cellSize, cellSize, cellSize);
     }
-
-    ctx.save();
-    ctx.translate(agent.col*cellSize + cellSize/2,
-                  agent.row*cellSize + cellSize/2);
-    ctx.rotate(direction*Math.PI/2);
-    ctx.drawImage(trilobiteImg,
-                  -cellSize/2,
-                  -cellSize/2,
-                  cellSize,
-                  cellSize);
-    ctx.restore();
+  }
+  drawAgent();
 }
 
-// ===========================
-// GRID CLICK (NO SHIFT)
-// ===========================
+function drawAgent() {
+  const px = agentX * cellSize;
+  const py = agentY * cellSize;
+  const s = cellSize;
+  const cx = px + s/2, cy = py + s/2;
 
-canvas.addEventListener("click", e=>{
+  ctx.save();
+  ctx.translate(cx, cy);
+  // rotate so "north" = up
+  const angle = agentDir * Math.PI / 2;
+  ctx.rotate(angle);
 
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
+  // trilobite body (oval)
+  ctx.beginPath();
+  ctx.ellipse(0, 0, s*0.35, s*0.45, 0, 0, Math.PI*2);
+  ctx.fillStyle = '#00e5ff';
+  ctx.globalAlpha = 0.9;
+  ctx.fill();
 
-    const x = (e.clientX - rect.left) * scaleX;
-    const y = (e.clientY - rect.top) * scaleY;
+  // head (pointing forward = up before rotation)
+  ctx.beginPath();
+  ctx.ellipse(0, -s*0.3, s*0.2, s*0.15, 0, 0, Math.PI*2);
+  ctx.fillStyle = '#80f0ff';
+  ctx.fill();
 
-    const c = Math.floor(x / cellSize);
-    const r = Math.floor(y / cellSize);
+  // segments
+  ctx.globalAlpha = 0.5;
+  ctx.strokeStyle = '#003040';
+  ctx.lineWidth = 0.5;
+  for (let i = -1; i <= 1; i++) {
+    ctx.beginPath();
+    ctx.moveTo(-s*0.35, i * s * 0.12);
+    ctx.lineTo(s*0.35, i * s * 0.12);
+    ctx.stroke();
+  }
 
-    if (r>=0 && r<rows && c>=0 && c<cols) {
-        grid[r][c] = grid[r][c]==="sand" ? "rock" : "sand";
-        render();
-    }
+  // antennae
+  ctx.globalAlpha = 0.7;
+  ctx.strokeStyle = '#80f0ff';
+  ctx.lineWidth = 0.8;
+  ctx.beginPath();
+  ctx.moveTo(-s*0.1, -s*0.4);
+  ctx.lineTo(-s*0.2, -s*0.48);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(s*0.1, -s*0.4);
+  ctx.lineTo(s*0.2, -s*0.48);
+  ctx.stroke();
+
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+// ─── CANVAS CLICK ───────────────────────────────────────────────────────────
+canvas.addEventListener('click', e => {
+  if (running) return;
+  const rect = canvas.getBoundingClientRect();
+  const gx = Math.floor((e.clientX - rect.left) / cellSize);
+  const gy = Math.floor((e.clientY - rect.top) / cellSize);
+  if (gx < 0 || gx >= cols || gy < 0 || gy >= rows) return;
+  if (gx === agentX && gy === agentY) return;
+  grid[gy][gx] = grid[gy][gx] === SAND ? ROCK : SAND;
+  render();
 });
 
-// ===========================
-// PARSER
-// ===========================
+// ─── PARSER / COMPILER ──────────────────────────────────────────────────────
+/*
+  Returns an AST or throws a SyntaxError with location info.
+  program ::= stmt*
+  stmt    ::= action | conditional | loop
+  action  ::= "L" | "R" | "F"
+  conditional ::= test stmt
+  test    ::= "?U" | "?B"
+  loop    ::= "(" program ")*"
+*/
 
-function tokenize(code){
-    return code.match(/\?U|\?B|\(|\)\*|L|R|F/g) || [];
-}
-
-function parse(tokens){
-    let pos=0;
-
-    function parseProgram(){
-        let stmts=[];
-        while(pos<tokens.length && tokens[pos]!==")*")
-            stmts.push(parseStmt());
-        return stmts;
+function tokenize(src) {
+  const tokens = [];
+  let i = 0;
+  while (i < src.length) {
+    // skip whitespace / comments
+    if (/\s/.test(src[i])) { i++; continue; }
+    if (src[i] === '/' && src[i+1] === '/') {
+      while (i < src.length && src[i] !== '\n') i++;
+      continue;
     }
-
-    function parseStmt(){
-        let token=tokens[pos++];
-
-        if(["L","R","F"].includes(token))
-            return {type:"action",value:token};
-
-        if(token==="?U"||token==="?B")
-            return {type:"conditional",test:token,stmt:parseStmt()};
-
-        if(token==="("){
-            let body=parseProgram();
-            pos++; // skip )*
-            return {type:"loop",body};
-        }
-
-        throw "Parse error";
+    if (src[i] === '?' && (src[i+1] === 'U' || src[i+1] === 'B')) {
+      tokens.push({type: src[i+1]==='U'?'?U':'?B', pos:i});
+      i += 2; continue;
     }
-
-    return parseProgram();
-}
-
-// ===========================
-// SEMANTICS
-// ===========================
-
-function frontCell(){
-    const dr=[-1,0,1,0];
-    const dc=[0,1,0,-1];
-    return {r:agent.row+dr[direction],
-            c:agent.col+dc[direction]};
-}
-
-function isUnblocked(){
-    const f=frontCell();
-    if(f.r<0||f.r>=rows||f.c<0||f.c>=cols)
-        return false;
-    return grid[f.r][f.c]==="sand";
-}
-
-// ONE TRUE SMALL STEP
-function step(){
-
-    if(controlStack.length===0) return;
-
-    const node = controlStack.pop();
-
-    if(node.type==="action"){
-
-        if(node.value==="L")
-            direction=(direction+3)%4;
-
-        else if(node.value==="R")
-            direction=(direction+1)%4;
-
-        else if(node.value==="F" && isUnblocked()){
-            const f=frontCell();
-            agent.row=f.r;
-            agent.col=f.c;
-        }
+    if (src[i] === 'F' || src[i] === 'L' || src[i] === 'R') {
+      tokens.push({type: src[i], pos:i});
+      i++; continue;
     }
+    if (src[i] === '(') { tokens.push({type:'(', pos:i}); i++; continue; }
+    if (src[i] === ')' && src[i+1] === '*') { tokens.push({type:')*', pos:i}); i+=2; continue; }
+    throw new SyntaxError(`Unexpected character '${src[i]}' at position ${i}`);
+  }
+  return tokens;
+}
 
-    else if(node.type==="conditional"){
-
-        const cond = node.test==="?U"
-            ? isUnblocked()
-            : !isUnblocked();
-
-        if(cond)
-            controlStack.push(node.stmt);
+function parse(tokens) {
+  let pos = 0;
+  function parseProgram() {
+    const stmts = [];
+    while (pos < tokens.length && tokens[pos].type !== ')*') {
+      stmts.push(parseStmt());
     }
-
-    else if(node.type==="loop"){
-
-        // Re-push loop (infinite semantics)
-        controlStack.push(node);
-
-        // Push body in reverse order
-        for(let i=node.body.length-1;i>=0;i--)
-            controlStack.push(node.body[i]);
+    return {type:'program', stmts};
+  }
+  function parseStmt() {
+    const tok = tokens[pos];
+    if (!tok) throw new SyntaxError('Unexpected end of input');
+    if (tok.type === 'F' || tok.type === 'L' || tok.type === 'R') {
+      pos++;
+      return {type:'action', action: tok.type};
     }
-
-    render();
+    if (tok.type === '?U' || tok.type === '?B') {
+      pos++;
+      const body = parseStmt();
+      return {type:'conditional', test: tok.type, body};
+    }
+    if (tok.type === '(') {
+      pos++;
+      const body = parseProgram();
+      if (!tokens[pos] || tokens[pos].type !== ')*') {
+        throw new SyntaxError(`Expected )* to close loop opened at position ${tok.pos}`);
+      }
+      pos++;
+      return {type:'loop', body};
+    }
+    throw new SyntaxError(`Unexpected token '${tok.type}' at position ${tok.pos}`);
+  }
+  const ast = parseProgram();
+  if (pos < tokens.length) {
+    throw new SyntaxError(`Unexpected token '${tokens[pos].type}' at position ${tokens[pos].pos}`);
+  }
+  return ast;
 }
 
-// ===========================
-// CONTROLS
-// ===========================
+// ─── INTERPRETER (GENERATOR-BASED, SINGLE STEP) ─────────────────────────────
+// We use a continuation stack: each frame is a generator.
 
-function compileProgram(){
+let execStack = [];
 
-    pause();
-
-    const code=document.getElementById("code").value;
-    const tokens=tokenize(code);
-    const ast=parse(tokens);
-
-    controlStack=[];
-
-    // push in reverse order
-    for(let i=ast.length-1;i>=0;i--)
-        controlStack.push(ast[i]);
-
-    alert("Compiled successfully.");
+function* execProgram(node) {
+  for (const stmt of node.stmts) {
+    yield* execStmt(stmt);
+  }
 }
 
-function run(){
-    if(running) return;
-    running=true;
-    const speed=document.getElementById("speedSlider").value;
-    timer=setInterval(step,speed);
+function* execStmt(node) {
+  if (node.type === 'action') {
+    yield node.action;
+  } else if (node.type === 'conditional') {
+    const front = frontCell();
+    const cond = (node.test === '?U') ? (front === SAND) : (front === ROCK);
+    if (cond) yield* execStmt(node.body);
+  } else if (node.type === 'loop') {
+    while (true) {
+      yield* execProgram(node.body);
+    }
+  }
 }
 
-function pause(){
-    running=false;
-    clearInterval(timer);
+function frontCell() {
+  const d = DIRS[agentDir];
+  const nx = agentX + d.dx;
+  const ny = agentY + d.dy;
+  if (nx < 0 || nx >= cols || ny < 0 || ny >= rows) return ROCK;
+  return grid[ny][nx];
 }
 
-function resetWorld(){
-    pause();
+let mainGen = null;
+
+function initExec() {
+  mainGen = execProgram(compiled);
+}
+
+function doStep() {
+  if (!mainGen) return false;
+  const result = mainGen.next();
+  if (result.done) { mainGen = null; return false; }
+  const action = result.value;
+  applyAction(action);
+  stepCount++;
+  document.getElementById('step-count').textContent = stepCount;
+  render();
+  return true;
+}
+
+function applyAction(action) {
+  if (action === 'L') {
+    agentDir = (agentDir + 3) % 4;
+  } else if (action === 'R') {
+    agentDir = (agentDir + 1) % 4;
+  } else if (action === 'F') {
+    const d = DIRS[agentDir];
+    const nx = agentX + d.dx;
+    const ny = agentY + d.dy;
+    if (nx >= 0 && nx < cols && ny >= 0 && ny < rows && grid[ny][nx] === SAND) {
+      agentX = nx;
+      agentY = ny;
+    }
+  }
+}
+
+// ─── UI CONTROLS ────────────────────────────────────────────────────────────
+const btnCompile = document.getElementById('btn-compile');
+const btnRun = document.getElementById('btn-run');
+const btnStop = document.getElementById('btn-stop');
+const btnStep = document.getElementById('btn-step');
+const btnReset = document.getElementById('btn-reset');
+const statusDot = document.getElementById('status-dot');
+const statusText = document.getElementById('status-text');
+
+function setStatus(msg, type='idle') {
+  statusText.textContent = msg;
+  statusText.className = type === 'error' ? 'err' : type === 'ok' ? 'ok' : '';
+  statusDot.className = 'status-dot' + (type==='error'?' err':type==='ok'?' ok':type==='run'?' run':'');
+}
+
+function updateButtons() {
+  const hasCompiled = !!compiled;
+  btnRun.disabled = !hasCompiled || running;
+  btnStop.disabled = !running;
+  btnStep.disabled = !hasCompiled || running;
+}
+
+btnCompile.addEventListener('click', () => {
+  stopRun();
+  const src = document.getElementById('code-editor').value;
+  try {
+    const tokens = tokenize(src);
+    const ast = parse(tokens);
+    compiled = ast;
+    setStatus('Compiled OK', 'ok');
+    updateButtons();
+  } catch(e) {
+    compiled = null;
+    setStatus(e.message, 'error');
+    updateButtons();
+  }
+});
+
+btnRun.addEventListener('click', () => {
+  if (!compiled) return;
+  if (!mainGen) { saveState(); initExec(); }
+  running = true;
+  setStatus('Running…', 'run');
+  updateButtons();
+  const ms = Math.round(1000 / stepsPerSec);
+  runInterval = setInterval(() => {
+    const cont = doStep();
+    if (!cont) { stopRun(); setStatus('Program finished', 'ok'); }
+  }, ms);
+});
+
+function stopRun() {
+  running = false;
+  clearInterval(runInterval);
+  runInterval = null;
+  updateButtons();
+}
+
+btnStop.addEventListener('click', () => {
+  stopRun();
+  setStatus('Stopped', 'idle');
+});
+
+btnStep.addEventListener('click', () => {
+  if (!compiled) return;
+  if (!mainGen) { saveState(); initExec(); }
+  const cont = doStep();
+  if (!cont) { setStatus('Program finished', 'ok'); mainGen = null; }
+  else setStatus(`Step ${stepCount}`, 'ok');
+  updateButtons();
+});
+
+btnReset.addEventListener('click', () => {
+  stopRun();
+  if (savedGrid.length) {
+    restoreState();
+  } else {
     initGrid();
-    initAgent();
-    render();
-}
+  }
+  mainGen = null;
+  setStatus('Reset', 'idle');
+  render();
+  updateButtons();
+});
 
+// ─── SLIDERS ────────────────────────────────────────────────────────────────
+const zoomSlider = document.getElementById('zoom-slider');
+const zoomVal = document.getElementById('zoom-val');
+const speedSlider = document.getElementById('speed-slider');
+const speedVal = document.getElementById('speed-val');
+
+zoomSlider.addEventListener('input', () => {
+  cellSize = parseInt(zoomSlider.value);
+  zoomVal.textContent = cellSize + 'px';
+  const running_was = running;
+  if (running_was) stopRun();
+  initGrid();
+  render();
+  if (running_was) btnRun.click();
+  updateButtons();
+});
+
+speedSlider.addEventListener('input', () => {
+  stepsPerSec = parseInt(speedSlider.value);
+  speedVal.textContent = stepsPerSec + '/s';
+  if (running) {
+    clearInterval(runInterval);
+    const ms = Math.round(1000 / stepsPerSec);
+    runInterval = setInterval(() => {
+      const cont = doStep();
+      if (!cont) { stopRun(); setStatus('Program finished', 'ok'); }
+    }, ms);
+  }
+});
+
+// ─── RESIZE ─────────────────────────────────────────────────────────────────
+window.addEventListener('resize', () => {
+  const W = area.clientWidth, H = area.clientHeight;
+  canvas.width = W; canvas.height = H;
+  const newCols = Math.floor(W / cellSize);
+  const newRows = Math.floor(H / cellSize);
+  const newGrid = Array.from({length: newRows}, (_, y) =>
+    new Uint8Array(newCols).fill(SAND).map((v, x) => (grid[y] && grid[y][x] !== undefined) ? grid[y][x] : SAND)
+  );
+  cols = newCols; rows = newRows; grid = newGrid;
+  if (agentX >= cols) agentX = cols - 1;
+  if (agentY >= rows) agentY = rows - 1;
+  render();
+});
+
+// ─── INIT ───────────────────────────────────────────────────────────────────
+initGrid();
+render();
+setStatus('Ready — write a program and compile', 'idle');
+updateButtons();
 </script>
 </body>
 </html>
