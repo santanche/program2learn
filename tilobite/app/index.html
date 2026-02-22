@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Micro Agent Language</title>
+<style>
+body {
+    font-family: monospace;
+    display: flex;
+    gap: 20px;
+}
+
+#leftPanel {
+    width: 350px;
+}
+
+textarea {
+    width: 100%;
+    height: 250px;
+    font-family: monospace;
+    font-size: 14px;
+}
+
+button {
+    margin-top: 10px;
+    width: 100%;
+    padding: 8px;
+}
+
+#gridContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+canvas {
+    border: 1px solid black;
+}
+</style>
+</head>
+<body>
+
+<div id="leftPanel">
+<h3>Program</h3>
+<textarea id="code">
+(
+  ?U F
+  ?B R
+)*
+</textarea>
+
+<button onclick="runProgram()">Run</button>
+<button onclick="resetWorld()">Reset</button>
+
+<label>Zoom:</label>
+<input type="range" min="16" max="64" value="32" id="zoomSlider">
+</div>
+
+<div id="gridContainer">
+<canvas id="gridCanvas"></canvas>
+</div>
+
+<script>
+
+// ============================
+// WORLD CONFIG
+// ============================
+
+let rows = 15;
+let cols = 15;
+let cellSize = 32;
+let grid = [];
+let agent = {};
+let direction = 0; // 0=N,1=E,2=S,3=W
+
+const canvas = document.getElementById("gridCanvas");
+const ctx = canvas.getContext("2d");
+
+function initGrid() {
+    grid = [];
+    for (let r = 0; r < rows; r++) {
+        let row = [];
+        for (let c = 0; c < cols; c++) {
+            row.push("sand");
+        }
+        grid.push(row);
+    }
+}
+
+function initAgent() {
+    agent.row = Math.floor(rows/2);
+    agent.col = Math.floor(cols/2);
+    direction = 0;
+}
+
+function resizeCanvas() {
+    canvas.width = cols * cellSize;
+    canvas.height = rows * cellSize;
+    render();
+}
+
+document.getElementById("zoomSlider").addEventListener("input", (e) => {
+    cellSize = parseInt(e.target.value);
+    resizeCanvas();
+});
+
+// ============================
+// RENDERING
+// ============================
+
+function render() {
+    for (let r=0;r<rows;r++){
+        for (let c=0;c<cols;c++){
+            ctx.fillStyle = grid[r][c] === "sand" ? "#f4d03f" : "#7f8c8d";
+            ctx.fillRect(c*cellSize, r*cellSize, cellSize, cellSize);
+            ctx.strokeRect(c*cellSize, r*cellSize, cellSize, cellSize);
+        }
+    }
+    drawAgent();
+}
+
+function drawAgent() {
+    ctx.save();
+    ctx.translate(
+        agent.col*cellSize + cellSize/2,
+        agent.row*cellSize + cellSize/2
+    );
+    ctx.rotate(direction * Math.PI/2);
+
+    ctx.fillStyle = "brown";
+    ctx.beginPath();
+    ctx.moveTo(0, -cellSize/3);
+    ctx.lineTo(cellSize/4, cellSize/3);
+    ctx.lineTo(-cellSize/4, cellSize/3);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.restore();
+}
+
+// ============================
+// GRID INTERACTION
+// ============================
+
+canvas.addEventListener("click", (e)=>{
+    let rect = canvas.getBoundingClientRect();
+    let x = e.clientX - rect.left;
+    let y = e.clientY - rect.top;
+
+    let c = Math.floor(x / cellSize);
+    let r = Math.floor(y / cellSize);
+
+    if (grid[r][c] === "sand")
+        grid[r][c] = "rock";
+    else
+        grid[r][c] = "sand";
+
+    render();
+});
+
+// ============================
+// PARSER
+// ============================
+
+function tokenize(code) {
+    return code.match(/\?U|\?B|\(|\)\*|L|R|F/g) || [];
+}
+
+function parse(tokens) {
+    let pos = 0;
+
+    function parseProgram() {
+        let stmts = [];
+        while (pos < tokens.length && tokens[pos] !== ")*") {
+            stmts.push(parseStmt());
+        }
+        return { type: "program", stmts };
+    }
+
+    function parseStmt() {
+        let token = tokens[pos++];
+
+        if (["L","R","F"].includes(token))
+            return { type: "action", value: token };
+
+        if (token === "?U" || token === "?B")
+            return { type: "conditional", test: token, stmt: parseStmt() };
+
+        if (token === "(") {
+            let body = parseProgram();
+            pos++; // skip )*
+            return { type: "loop", body };
+        }
+
+        throw "Parse error";
+    }
+
+    return parseProgram();
+}
+
+// ============================
+// EXECUTION
+// ============================
+
+function frontCell() {
+    let dr = [-1,0,1,0];
+    let dc = [0,1,0,-1];
+    return {
+        r: agent.row + dr[direction],
+        c: agent.col + dc[direction]
+    };
+}
+
+function isUnblocked() {
+    let f = frontCell();
+    if (f.r < 0 || f.r >= rows || f.c < 0 || f.c >= cols)
+        return false;
+    return grid[f.r][f.c] === "sand";
+}
+
+function execute(node, steps=0) {
+    if (steps > 10000) return; // safety
+
+    if (node.type === "program") {
+        for (let s of node.stmts)
+            execute(s, steps++);
+    }
+
+    else if (node.type === "action") {
+        if (node.value === "L")
+            direction = (direction + 3) % 4;
+
+        if (node.value === "R")
+            direction = (direction + 1) % 4;
+
+        if (node.value === "F") {
+            if (isUnblocked()) {
+                let f = frontCell();
+                agent.row = f.r;
+                agent.col = f.c;
+            }
+        }
+    }
+
+    else if (node.type === "conditional") {
+        let cond = node.test === "?U" ? isUnblocked() : !isUnblocked();
+        if (cond)
+            execute(node.stmt, steps++);
+    }
+
+    else if (node.type === "loop") {
+        for (let i=0;i<200;i++) // bounded loop
+            execute(node.body, steps++);
+    }
+
+    render();
+}
+
+// ============================
+// UI
+// ============================
+
+function runProgram() {
+    try {
+        let code = document.getElementById("code").value;
+        let tokens = tokenize(code);
+        let ast = parse(tokens);
+        execute(ast);
+    } catch (e) {
+        alert("Error: " + e);
+    }
+}
+
+function resetWorld() {
+    initGrid();
+    initAgent();
+    render();
+}
+
+// INIT
+initGrid();
+initAgent();
+resizeCanvas();
+
+</script>
+</body>
+</html>
