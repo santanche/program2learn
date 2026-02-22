@@ -226,10 +226,7 @@
   }
 
   .legend-row { display: flex; align-items: center; gap: 8px; }
-  .legend-swatch { width: 14px; height: 14px; border: 1px solid #3a3a5a; }
-  .legend-sand { background: var(--sand); }
-  .legend-rock { background: var(--rock); }
-  .legend-trilobite { background: var(--accent); opacity: 0.8; }
+  .legend-swatch { width: 20px; height: 20px; border: 1px solid #3a3a5a; image-rendering: pixelated; }
 
   .step-counter {
     position: absolute;
@@ -255,7 +252,7 @@
 <div class="main">
   <div class="left-panel">
     <div class="section-label">Program Code</div>
-    <textarea id="code-editor" placeholder="// Type your program here&#10;// Example:&#10;(&#10;  ?U F&#10;  ?B R&#10;)*"></textarea>
+    <textarea id="code-editor" placeholder="// your program here"></textarea>
 
     <div class="status-bar">
       <div class="status-dot" id="status-dot"></div>
@@ -268,13 +265,16 @@
       <button id="btn-stop" disabled>Stop</button>
       <button id="btn-step" disabled>Step</button>
       <button class="danger" id="btn-reset">Reset</button>
+      <button id="btn-save">Save</button>
+      <button id="btn-load">Load</button>
+      <input type="file" id="file-input" accept=".json" style="display:none">
     </div>
 
     <div class="sliders">
       <div class="slider-row">
         <span class="slider-label">Zoom</span>
-        <input type="range" id="zoom-slider" min="4" max="32" value="10" step="1">
-        <span class="slider-val" id="zoom-val">10px</span>
+        <input type="range" id="zoom-slider" min="4" max="32" value="32" step="1">
+        <span class="slider-val" id="zoom-val">32px</span>
       </div>
       <div class="slider-row">
         <span class="slider-label">Speed</span>
@@ -288,9 +288,9 @@
     <canvas id="grid-canvas"></canvas>
     <div class="step-counter">STEPS: <span id="step-count">0</span></div>
     <div class="legend">
-      <div class="legend-row"><div class="legend-swatch legend-sand"></div> Sand (passable)</div>
-      <div class="legend-row"><div class="legend-swatch legend-rock"></div> Rock (blocked)</div>
-      <div class="legend-row"><div class="legend-swatch legend-trilobite"></div> Trilobite</div>
+      <div class="legend-row"><img class="legend-swatch" src="images/sand.png" alt="sand"> Sand (passable)</div>
+      <div class="legend-row"><img class="legend-swatch" src="images/rock.png" alt="rock"> Rock (blocked)</div>
+      <div class="legend-row"><img class="legend-swatch" src="images/trilobite.png" alt="trilobite"> Trilobite</div>
     </div>
   </div>
 </div>
@@ -302,7 +302,7 @@ const DIRS = [{dx:0,dy:-1},{dx:1,dy:0},{dx:0,dy:1},{dx:-1,dy:0}]; // N E S W
 const DIR_NAMES = ['N','E','S','W'];
 
 // ─── STATE ──────────────────────────────────────────────────────────────────
-let cellSize = 10;
+let cellSize = 32;
 let stepsPerSec = 4;
 let cols, rows;
 let grid = [];
@@ -350,17 +350,41 @@ function restoreState() {
   document.getElementById('step-count').textContent = '0';
 }
 
+// ─── IMAGES ─────────────────────────────────────────────────────────────────
+const imgSand = new Image();
+const imgRock = new Image();
+const imgTrilobite = new Image();
+imgSand.src = 'images/sand.png';
+imgRock.src = 'images/rock.png';
+imgTrilobite.src = 'images/trilobite.png';
+
+let imagesReady = false;
+let loadedCount = 0;
+function onImgLoad() {
+  loadedCount++;
+  if (loadedCount === 3) { imagesReady = true; render(); }
+}
+imgSand.onload = onImgLoad;
+imgRock.onload = onImgLoad;
+imgTrilobite.onload = onImgLoad;
+// Fallback: if images fail, mark ready anyway so solid colors are used
+imgSand.onerror = onImgLoad;
+imgRock.onerror = onImgLoad;
+imgTrilobite.onerror = onImgLoad;
+
 // ─── RENDER ─────────────────────────────────────────────────────────────────
-const SAND_COLORS = ['#d4a96a','#c89a5a','#ddb570','#c8a060'];
-const ROCK_COLORS = ['#5a5a6e','#4e4e62','#626274','#545466'];
 
 function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
-      const c = (x + y) % 2;
-      ctx.fillStyle = grid[y][x] === SAND ? SAND_COLORS[c*2 + (y%2)] : ROCK_COLORS[c*2 + (y%2)];
-      ctx.fillRect(x*cellSize, y*cellSize, cellSize, cellSize);
+      const img = grid[y][x] === SAND ? imgSand : imgRock;
+      if (imagesReady && img.complete && img.naturalWidth > 0) {
+        ctx.drawImage(img, x*cellSize, y*cellSize, cellSize, cellSize);
+      } else {
+        ctx.fillStyle = grid[y][x] === SAND ? '#d4a96a' : '#5a5a6e';
+        ctx.fillRect(x*cellSize, y*cellSize, cellSize, cellSize);
+      }
     }
   }
   drawAgent();
@@ -370,53 +394,31 @@ function drawAgent() {
   const px = agentX * cellSize;
   const py = agentY * cellSize;
   const s = cellSize;
-  const cx = px + s/2, cy = py + s/2;
 
-  ctx.save();
-  ctx.translate(cx, cy);
-  // rotate so "north" = up
-  const angle = agentDir * Math.PI / 2;
-  ctx.rotate(angle);
-
-  // trilobite body (oval)
-  ctx.beginPath();
-  ctx.ellipse(0, 0, s*0.35, s*0.45, 0, 0, Math.PI*2);
-  ctx.fillStyle = '#00e5ff';
-  ctx.globalAlpha = 0.9;
-  ctx.fill();
-
-  // head (pointing forward = up before rotation)
-  ctx.beginPath();
-  ctx.ellipse(0, -s*0.3, s*0.2, s*0.15, 0, 0, Math.PI*2);
-  ctx.fillStyle = '#80f0ff';
-  ctx.fill();
-
-  // segments
-  ctx.globalAlpha = 0.5;
-  ctx.strokeStyle = '#003040';
-  ctx.lineWidth = 0.5;
-  for (let i = -1; i <= 1; i++) {
+  if (imagesReady && imgTrilobite.complete && imgTrilobite.naturalWidth > 0) {
+    ctx.save();
+    ctx.translate(px + s/2, py + s/2);
+    ctx.rotate(agentDir * Math.PI / 2);
+    ctx.drawImage(imgTrilobite, -s/2, -s/2, s, s);
+    ctx.restore();
+  } else {
+    // Fallback vector trilobite
+    const cx = px + s/2, cy = py + s/2;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(agentDir * Math.PI / 2);
     ctx.beginPath();
-    ctx.moveTo(-s*0.35, i * s * 0.12);
-    ctx.lineTo(s*0.35, i * s * 0.12);
-    ctx.stroke();
+    ctx.ellipse(0, 0, s*0.35, s*0.45, 0, 0, Math.PI*2);
+    ctx.fillStyle = '#00e5ff';
+    ctx.globalAlpha = 0.9;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(0, -s*0.3, s*0.2, s*0.15, 0, 0, Math.PI*2);
+    ctx.fillStyle = '#80f0ff';
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.restore();
   }
-
-  // antennae
-  ctx.globalAlpha = 0.7;
-  ctx.strokeStyle = '#80f0ff';
-  ctx.lineWidth = 0.8;
-  ctx.beginPath();
-  ctx.moveTo(-s*0.1, -s*0.4);
-  ctx.lineTo(-s*0.2, -s*0.48);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(s*0.1, -s*0.4);
-  ctx.lineTo(s*0.2, -s*0.48);
-  ctx.stroke();
-
-  ctx.globalAlpha = 1;
-  ctx.restore();
 }
 
 // ─── CANVAS CLICK ───────────────────────────────────────────────────────────
@@ -701,6 +703,83 @@ window.addEventListener('resize', () => {
   if (agentX >= cols) agentX = cols - 1;
   if (agentY >= rows) agentY = rows - 1;
   render();
+});
+
+// ─── SAVE / LOAD ─────────────────────────────────────────────────────────────
+document.getElementById('btn-save').addEventListener('click', () => {
+  const data = {
+    version: 1,
+    code: document.getElementById('code-editor').value,
+    cellSize,
+    stepsPerSec,
+    agentX, agentY, agentDir,
+    cols, rows,
+    grid: grid.map(row => Array.from(row))
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'trilobite-env.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  setStatus('Environment saved', 'ok');
+});
+
+document.getElementById('btn-load').addEventListener('click', () => {
+  document.getElementById('file-input').click();
+});
+
+document.getElementById('file-input').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      stopRun();
+      compiled = null;
+      mainGen = null;
+
+      // Restore code
+      document.getElementById('code-editor').value = data.code || '';
+
+      // Restore grid dimensions and cells
+      cols = data.cols;
+      rows = data.rows;
+      grid = data.grid.map(row => new Uint8Array(row));
+      savedGrid = [];
+
+      // Restore agent
+      agentX = data.agentX;
+      agentY = data.agentY;
+      agentDir = data.agentDir;
+
+      // Restore zoom & speed
+      cellSize = data.cellSize || 32;
+      stepsPerSec = data.stepsPerSec || 4;
+      document.getElementById('zoom-slider').value = cellSize;
+      document.getElementById('zoom-val').textContent = cellSize + 'px';
+      document.getElementById('speed-slider').value = stepsPerSec;
+      document.getElementById('speed-val').textContent = stepsPerSec + '/s';
+
+      // Resize canvas to match
+      canvas.width = area.clientWidth;
+      canvas.height = area.clientHeight;
+
+      stepCount = 0;
+      document.getElementById('step-count').textContent = '0';
+
+      render();
+      setStatus('Environment loaded', 'ok');
+      updateButtons();
+    } catch(err) {
+      setStatus('Load failed: ' + err.message, 'error');
+    }
+    // Reset file input so same file can be reloaded
+    e.target.value = '';
+  };
+  reader.readAsText(file);
 });
 
 // ─── INIT ───────────────────────────────────────────────────────────────────
