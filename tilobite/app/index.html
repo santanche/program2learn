@@ -273,8 +273,8 @@
     <div class="sliders">
       <div class="slider-row">
         <span class="slider-label">Zoom</span>
-        <input type="range" id="zoom-slider" min="4" max="32" value="32" step="1">
-        <span class="slider-val" id="zoom-val">32px</span>
+        <input type="range" id="zoom-slider" min="4" max="128" value="64" step="1">
+        <span class="slider-val" id="zoom-val">64px</span>
       </div>
       <div class="slider-row">
         <span class="slider-label">Speed</span>
@@ -302,7 +302,7 @@ const DIRS = [{dx:0,dy:-1},{dx:1,dy:0},{dx:0,dy:1},{dx:-1,dy:0}]; // N E S W
 const DIR_NAMES = ['N','E','S','W'];
 
 // ─── STATE ──────────────────────────────────────────────────────────────────
-let cellSize = 32;
+let cellSize = 64;
 let stepsPerSec = 4;
 let cols, rows;
 let grid = [];
@@ -756,7 +756,7 @@ document.getElementById('file-input').addEventListener('change', e => {
       agentDir = data.agentDir;
 
       // Restore zoom & speed
-      cellSize = data.cellSize || 32;
+      cellSize = data.cellSize || 64;
       stepsPerSec = data.stepsPerSec || 4;
       document.getElementById('zoom-slider').value = cellSize;
       document.getElementById('zoom-val').textContent = cellSize + 'px';
