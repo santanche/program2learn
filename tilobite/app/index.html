@@ -265,6 +265,7 @@
       <button id="btn-stop" disabled>Stop</button>
       <button id="btn-step" disabled>Step</button>
       <button class="danger" id="btn-reset">Reset</button>
+      <button id="btn-clean">Clean</button>
       <button id="btn-save">Save</button>
       <button id="btn-load">Load</button>
       <input type="file" id="file-input" accept=".json" style="display:none">
@@ -599,6 +600,12 @@ function updateButtons() {
 
 btnCompile.addEventListener('click', () => {
   stopRun();
+  // Reset execution state so the new program starts fresh
+  mainGen = null;
+  savedGrid = [];
+  stepCount = 0;
+  document.getElementById('step-count').textContent = '0';
+
   const src = document.getElementById('code-editor').value;
   try {
     const tokens = tokenize(src);
@@ -660,6 +667,18 @@ btnReset.addEventListener('click', () => {
   updateButtons();
 });
 
+// Clean: wipe the grid back to all-sand and return trilobite to centre,
+// without touching the compiled program or the code editor.
+document.getElementById('btn-clean').addEventListener('click', () => {
+  stopRun();
+  mainGen = null;
+  savedGrid = [];
+  initGrid();          // resets grid, agentX/Y/Dir, stepCount
+  setStatus('Cleaned', 'idle');
+  render();
+  updateButtons();
+});
+
 // ─── SLIDERS ────────────────────────────────────────────────────────────────
 const zoomSlider = document.getElementById('zoom-slider');
 const zoomVal = document.getElementById('zoom-val');
@@ -706,7 +725,7 @@ window.addEventListener('resize', () => {
 });
 
 // ─── SAVE / LOAD ─────────────────────────────────────────────────────────────
-document.getElementById('btn-save').addEventListener('click', () => {
+document.getElementById('btn-save').addEventListener('click', async () => {
   const data = {
     version: 1,
     code: document.getElementById('code-editor').value,
@@ -716,14 +735,33 @@ document.getElementById('btn-save').addEventListener('click', () => {
     cols, rows,
     grid: grid.map(row => Array.from(row))
   };
-  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'trilobite-env.json';
-  a.click();
-  URL.revokeObjectURL(url);
-  setStatus('Environment saved', 'ok');
+  const json = JSON.stringify(data, null, 2);
+
+  // Use the File System Access API to let the user pick destination folder & filename
+  if (window.showSaveFilePicker) {
+    try {
+      const fileHandle = await window.showSaveFilePicker({
+        suggestedName: 'trilobite-env.json',
+        types: [{ description: 'JSON file', accept: { 'application/json': ['.json'] } }]
+      });
+      const writable = await fileHandle.createWritable();
+      await writable.write(json);
+      await writable.close();
+      setStatus('Environment saved', 'ok');
+    } catch (err) {
+      if (err.name !== 'AbortError') setStatus('Save failed: ' + err.message, 'error');
+    }
+  } else {
+    // Fallback for browsers without File System Access API
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'trilobite-env.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    setStatus('Environment saved', 'ok');
+  }
 });
 
 document.getElementById('btn-load').addEventListener('click', () => {
@@ -756,7 +794,7 @@ document.getElementById('file-input').addEventListener('change', e => {
       agentDir = data.agentDir;
 
       // Restore zoom & speed
-      cellSize = data.cellSize || 64;
+      cellSize = data.cellSize || 32;
       stepsPerSec = data.stepsPerSec || 4;
       document.getElementById('zoom-slider').value = cellSize;
       document.getElementById('zoom-val').textContent = cellSize + 'px';
