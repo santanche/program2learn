@@ -439,7 +439,7 @@ canvas.addEventListener('click', e => {
   Returns an AST or throws a SyntaxError with location info.
   program ::= stmt*
   stmt    ::= action | conditional | loop
-  action  ::= "L" | "R" | "F"
+  action  ::= "L" | "R" | "S" | "F"
   conditional ::= test stmt
   test    ::= "?U" | "?B"
   loop    ::= "(" program ")*"
@@ -459,7 +459,7 @@ function tokenize(src) {
       tokens.push({type: src[i+1]==='U'?'?U':'?B', pos:i});
       i += 2; continue;
     }
-    if (src[i] === 'F' || src[i] === 'L' || src[i] === 'R') {
+    if (src[i] === 'F' || src[i] === 'L' || src[i] === 'R' || src[i] === 'S') {
       tokens.push({type: src[i], pos:i});
       i++; continue;
     }
@@ -482,7 +482,7 @@ function parse(tokens) {
   function parseStmt() {
     const tok = tokens[pos];
     if (!tok) throw new SyntaxError('Unexpected end of input');
-    if (tok.type === 'F' || tok.type === 'L' || tok.type === 'R') {
+    if (tok.type === 'F' || tok.type === 'L' || tok.type === 'R' || tok.type === 'S') {
       pos++;
       return {type:'action', action: tok.type};
     }
@@ -565,6 +565,8 @@ function applyAction(action) {
     agentDir = (agentDir + 3) % 4;
   } else if (action === 'R') {
     agentDir = (agentDir + 1) % 4;
+  } else if (action === 'S') {
+    agentDir = Math.random() < 0.5 ? (agentDir + 3) % 4 : (agentDir + 1) % 4;
   } else if (action === 'F') {
     const d = DIRS[agentDir];
     const nx = agentX + d.dx;
