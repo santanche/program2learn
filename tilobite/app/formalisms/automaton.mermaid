@@ -1,0 +1,17 @@
+---
+title: Finite Automaton — Trilobite Token Language
+---
+flowchart LR
+    ENTRY(( )) -->|start| q0
+
+    q0(["q₀ ✓"])
+    q1["q₁"]
+    q2["q₂"]
+
+    q0 -->|"F, L, R, S, ("| q0
+    q0 -->|"?"| q1
+    q0 -->|")"| q2
+
+    q1 -->|"U, B"| q0
+
+    q2 -->|"*"| q0

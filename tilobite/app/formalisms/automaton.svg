@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400"
+     font-family="'Courier New', monospace" font-size="13">
+
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7"
+            refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#1a56a0"/>
+    </marker>
+    <style>
+      .state        { fill: #ffffff; stroke: #1a56a0; stroke-width: 2; }
+      .state-accept { fill: #eaf3fb; stroke: #1a56a0; stroke-width: 2.5; }
+      .state-inner  { fill: none; stroke: #1a56a0; stroke-width: 1.5; }
+      .label        { fill: #1a2a4a; text-anchor: middle; dominant-baseline: central;
+                      font-size: 15px; font-weight: bold; }
+      .edge         { fill: none; stroke: #1a56a0; stroke-width: 1.6;
+                      marker-end: url(#arrow); }
+      .edge-label   { fill: #c05c00; font-size: 12px; text-anchor: middle; font-weight: bold; }
+      .title        { fill: #556; font-size: 11.5px; letter-spacing: 2px; }
+      .bg           { fill: #f7f9fc; }
+      .legend-box   { fill: #eef2f7; stroke: #ccd6e0; stroke-width: 1; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect class="bg" width="720" height="400" rx="8" stroke="#ccd6e0" stroke-width="1"/>
+
+  <!-- Title -->
+  <text x="360" y="24" text-anchor="middle" class="title">
+    FINITE AUTOMATON — TRILOBITE TOKEN LANGUAGE
+  </text>
+
+  <!--
+    Layout (without dead state):
+      q0  start / accept  cx=160  cy=200
+      q1  after '?'       cx=440  cy=110
+      q2  after ')'       cx=440  cy=290
+  -->
+
+  <!-- ── q0 : start & accept ───────────────────────────────────────────── -->
+  <circle cx="160" cy="200" r="38" class="state-accept"/>
+  <circle cx="160" cy="200" r="28" class="state-inner"/>
+  <text x="160" y="200" class="label">q₀</text>
+
+  <!-- ── q1 : seen '?' ─────────────────────────────────────────────────── -->
+  <circle cx="440" cy="110" r="38" class="state"/>
+  <text x="440" y="110" class="label">q₁</text>
+
+  <!-- ── q2 : seen ')' ─────────────────────────────────────────────────── -->
+  <circle cx="440" cy="290" r="38" class="state"/>
+  <text x="440" y="290" class="label">q₂</text>
+
+  <!-- ════ EDGES ══════════════════════════════════════════════════════════ -->
+
+  <!-- Entry arrow -->
+  <line x1="52" y1="200" x2="114" y2="200" class="edge"/>
+  <text x="50" y="191" class="edge-label">start</text>
+
+  <!-- q0 self-loop (top arc): F, L, R, S, ( -->
+  <path d="M 134 166 A 52 52 0 1 1 186 166" class="edge"/>
+  <text x="160" y="96" class="edge-label">F, L, R, S, (</text>
+
+  <!-- q0 → q1  on ? -->
+  <path d="M 192 176 Q 310 80 402 100" class="edge"/>
+  <text x="284" y="104" class="edge-label">?</text>
+
+  <!-- q1 → q0  on U, B -->
+  <path d="M 403 128 Q 310 178 198 188" class="edge"/>
+  <text x="290" y="175" class="edge-label">U, B</text>
+
+  <!-- q0 → q2  on ) -->
+  <path d="M 192 222 Q 310 318 402 282" class="edge"/>
+  <text x="316" y="284" class="edge-label">)</text>
+
+  <!-- q2 → q0  on *  — sweep wide below both states -->
+  <path d="M 406 320 Q 290 390 148 232" class="edge"/>
+  <text x="264" y="372" class="edge-label">*</text>
+
+</svg>
