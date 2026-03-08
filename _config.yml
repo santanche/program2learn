@@ -1,0 +1,13 @@
+title: Program to Learn
+
+description: >
+  Learning programming paradigms.
+
+theme: minima
+
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
+minima:
+  skin: classic

@@ -1,0 +1,23 @@
+stateDiagram-v2
+    direction LR
+
+    %% States with labels
+    state "q0\nidle" as q0
+    state "q1\npaid" as q1
+    state "q2\nselected" as q2
+    state "q3\npaid/selected" as q3
+    state "q4\ncoffee ready" as q4
+
+    %% Initial state
+    [*] --> q0
+    q0 --> [*]
+
+    %% Transitions
+    q0 --> q1 : c / insert coin
+    q0 --> q2 : s / select coffee
+
+    q1 --> q3 : s / select coffee
+    q2 --> q3 : c / insert coin
+
+    q3 --> q4 : m / make coffee
+    q4 --> q0 : f / deliver coffee

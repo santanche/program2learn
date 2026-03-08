@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANTLR4 Lab — Browser Edition</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;700;800&display=swap');
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161d;
+    --surface2: #1a1e28;
+    --border: #252a38;
+    --accent: #5b9cf6;
+    --accent2: #a78bfa;
+    --green: #34d399;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── Header ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    gap: 12px;
+  }
+
+  .logo {
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+  }
+  .logo span { color: var(--accent); }
+
+  .header-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  /* Case-insensitive toggle */
+  .toggle-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    font-family: var(--mono);
+    color: var(--muted);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .toggle-wrap input[type=checkbox] { display: none; }
+  .toggle-pill {
+    width: 36px; height: 18px;
+    background: var(--border);
+    border-radius: 9px;
+    position: relative;
+    transition: background .2s;
+    flex-shrink: 0;
+  }
+  .toggle-pill::after {
+    content: '';
+    position: absolute;
+    width: 12px; height: 12px;
+    background: var(--muted);
+    border-radius: 50%;
+    top: 3px; left: 3px;
+    transition: transform .2s, background .2s;
+  }
+  .toggle-wrap input:checked ~ .toggle-pill { background: var(--accent2); }
+  .toggle-wrap input:checked ~ .toggle-pill::after {
+    transform: translateX(18px);
+    background: #fff;
+  }
+  .toggle-wrap:hover .toggle-pill { opacity: .85; }
+
+  /* Parse button */
+  #btn-parse {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 0.82rem;
+    padding: 7px 18px;
+    background: var(--accent);
+    color: #0d1117;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: opacity .15s, transform .1s;
+    white-space: nowrap;
+    letter-spacing: 0.03em;
+  }
+  #btn-parse:hover { opacity: .88; transform: translateY(-1px); }
+  #btn-parse:active { transform: translateY(0); }
+
+  /* ── Main layout ── */
+  .workspace {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 220px;
+    gap: 1px;
+    flex: 1;
+    overflow: hidden;
+    background: var(--border);
+  }
+
+  .panel {
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+    flex-shrink: 0;
+    gap: 8px;
+  }
+
+  .panel-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .panel-actions {
+    display: flex;
+    gap: 5px;
+  }
+
+  .btn-sm {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    padding: 3px 9px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color .15s, border-color .15s;
+    white-space: nowrap;
+  }
+  .btn-sm:hover { color: var(--text); border-color: var(--accent); }
+
+  /* hidden file input */
+  .file-input { display: none; }
+
+  textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    resize: none;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: var(--text);
+    padding: 12px 14px;
+    tab-size: 2;
+  }
+  textarea::placeholder { color: var(--muted); opacity: .5; }
+  textarea:focus { background: rgba(91,156,246,.02); }
+
+  /* ── Output panel (bottom row, spans all 3 cols) ── */
+  .output-panel {
+    grid-column: 1 / -1;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .output-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+    flex-shrink: 0;
+  }
+
+  .tab-btn {
+    font-family: var(--sans);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 8px 18px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color .15s;
+    white-space: nowrap;
+  }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-btn:hover:not(.active) { color: var(--text); }
+
+  .tab-content { display: none; flex: 1; overflow: auto; }
+  .tab-content.active { display: flex; }
+
+  /* Token table */
+  #tokens-view {
+    flex-direction: column;
+    overflow: auto;
+  }
+  #tokens-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+  }
+  #tokens-table th {
+    background: var(--surface2);
+    color: var(--muted);
+    padding: 5px 12px;
+    text-align: left;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    position: sticky; top: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  #tokens-table td {
+    padding: 3px 12px;
+    border-bottom: 1px solid rgba(37,42,56,.5);
+    color: var(--text);
+  }
+  #tokens-table tr:hover td { background: rgba(91,156,246,.04); }
+  .tok-type { color: var(--accent2); }
+  .tok-val  { color: var(--green); }
+
+  /* Parse tree */
+  #tree-view {
+    padding: 10px 16px;
+    overflow: auto;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    line-height: 1.7;
+    flex-direction: column;
+  }
+  .tree-node { white-space: pre; }
+  .tree-rule  { color: var(--accent); }
+  .tree-token { color: var(--green); }
+  .tree-err   { color: var(--red); }
+
+  /* Console / errors */
+  #console-view {
+    padding: 10px 16px;
+    overflow: auto;
+    font-family: var(--mono);
+    font-size: 0.76rem;
+    line-height: 1.7;
+    flex-direction: column;
+  }
+  .log-ok   { color: var(--green); }
+  .log-err  { color: var(--red); }
+  .log-warn { color: var(--yellow); }
+  .log-info { color: var(--muted); }
+
+  /* Status bar */
+  #status {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    padding: 4px 14px;
+    background: var(--surface2);
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    flex-shrink: 0;
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  #status .ok  { color: var(--green); }
+  #status .err { color: var(--red); }
+
+  /* scrollbars */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">ANTLR4 <span>Lab</span> — Browser Edition</div>
+
+  <div class="header-controls">
+    <label class="toggle-wrap" title="Wrap keyword rules to match any case (like CaseInsensitiveInputStream)">
+      <input type="checkbox" id="chk-ci">
+      <div class="toggle-pill"></div>
+      Case-insensitive
+    </label>
+    <button id="btn-parse">▶ Parse</button>
+  </div>
+</header>
+
+<div class="workspace">
+
+  <!-- Lexer panel -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">Lexer Grammar</span>
+      <div class="panel-actions">
+        <button class="btn-sm" onclick="loadFile('lexer')">Load</button>
+        <button class="btn-sm" onclick="saveFile('lexer')">Save</button>
+        <input class="file-input" id="file-lexer" type="file" accept=".g4,.txt" onchange="onFileLoad(event,'lexer')">
+      </div>
+    </div>
+    <textarea id="ta-lexer" spellcheck="false" placeholder="Paste your lexer grammar (PL0Lexer.g4) here…"></textarea>
+  </div>
+
+  <!-- Parser panel -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">Parser Grammar</span>
+      <div class="panel-actions">
+        <button class="btn-sm" onclick="loadFile('parser')">Load</button>
+        <button class="btn-sm" onclick="saveFile('parser')">Save</button>
+        <input class="file-input" id="file-parser" type="file" accept=".g4,.txt" onchange="onFileLoad(event,'parser')">
+      </div>
+    </div>
+    <textarea id="ta-parser" spellcheck="false" placeholder="Paste your parser grammar (PL0Parser.g4) here…"></textarea>
+  </div>
+
+  <!-- Input panel -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">Input Code</span>
+      <div class="panel-actions">
+        <button class="btn-sm" onclick="loadFile('code')">Load</button>
+        <button class="btn-sm" onclick="saveFile('code')">Save</button>
+        <input class="file-input" id="file-code" type="file" accept=".txt,.pl0" onchange="onFileLoad(event,'code')">
+      </div>
+    </div>
+    <textarea id="ta-code" spellcheck="false" placeholder="Type or paste PL/0 source code to parse…"></textarea>
+  </div>
+
+  <!-- Output panel -->
+  <div class="output-panel">
+    <div class="output-tabs">
+      <button class="tab-btn active" onclick="switchTab('console')">Console</button>
+      <button class="tab-btn" onclick="switchTab('tokens')">Tokens</button>
+      <button class="tab-btn" onclick="switchTab('tree')">Parse Tree</button>
+    </div>
+
+    <div id="console-view" class="tab-content active"></div>
+
+    <div id="tokens-view" class="tab-content">
+      <table id="tokens-table">
+        <thead><tr>
+          <th>#</th><th>Type</th><th>Name</th><th>Value</th><th>Line</th><th>Col</th><th>Channel</th>
+        </tr></thead>
+        <tbody id="tokens-body"></tbody>
+      </table>
+    </div>
+
+    <div id="tree-view" class="tab-content"></div>
+
+    <div id="status">
+      <span id="st-tokens">Tokens: —</span>
+      <span id="st-errors">Errors: —</span>
+      <span id="st-time">Time: —</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     ANTLR4 Lab Core — pure-JS ANTLR4 grammar interpreter
+     Implements: lexer grammar parser, parser grammar parser,
+     dynamic lexer/tokenizer, dynamic LL(*) parser, parse-tree builder.
+     No build step. No Java. 100% browser.
+═══════════════════════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ─── Default grammars ────────────────────────────────────────────────────────
+const DEFAULT_LEXER = `lexer grammar PL0Lexer;
+
+CONST     : [Cc][Oo][Nn][Ss][Tt] ;
+VAR       : [Vv][Aa][Rr] ;
+PROCEDURE : [Pp][Rr][Oo][Cc][Ee][Dd][Uu][Rr][Ee] ;
+CALL      : [Cc][Aa][Ll][Ll] ;
+BEGIN     : [Bb][Ee][Gg][Ii][Nn] ;
+END       : [Ee][Nn][Dd] ;
+IF        : [Ii][Ff] ;
+THEN      : [Tt][Hh][Ee][Nn] ;
+WHILE     : [Ww][Hh][Ii][Ll][Ee] ;
+DO        : [Dd][Oo] ;
+ODD       : [Oo][Dd][Dd] ;
+
+DOT       : '.' ;
+COMMA     : ',' ;
+SEMICOLON : ';' ;
+ASSIGN    : ':=' ;
+EQ        : '=' ;
+HASH      : '#' ;
+LEQ       : '<=' ;
+GEQ       : '>=' ;
+LT        : '<' ;
+GT        : '>' ;
+PLUS      : '+' ;
+MINUS     : '-' ;
+STAR      : '*' ;
+SLASH     : '/' ;
+LPAREN    : '(' ;
+RPAREN    : ')' ;
+QUESTION  : '?' ;
+BANG      : '!' ;
+
+NUMBER    : [0-9]+ ;
+IDENT     : [a-zA-Z][a-zA-Z0-9]* ;
+
+WS        : [ \\t\\r\\n]+ -> skip ;`;
+
+const DEFAULT_PARSER = `parser grammar PL0Parser;
+
+options { tokenVocab = PL0Lexer; }
+
+program   : block DOT EOF ;
+
+block     : ( CONST constDecl ( COMMA constDecl )* SEMICOLON )?
+            ( VAR IDENT ( COMMA IDENT )* SEMICOLON )?
+            ( PROCEDURE IDENT SEMICOLON block SEMICOLON )*
+            statement ;
+
+constDecl : IDENT EQ NUMBER ;
+
+statement : IDENT ASSIGN expression          # assignStmt
+          | CALL IDENT                        # callStmt
+          | QUESTION IDENT                    # readStmt
+          | BANG expression                   # writeStmt
+          | BEGIN statement ( SEMICOLON statement )* END  # beginStmt
+          | IF condition THEN statement       # ifStmt
+          | WHILE condition DO statement      # whileStmt
+          |                                   # emptyStmt
+          ;
+
+condition : ODD expression                   # oddCondition
+          | expression op=( EQ | HASH | LT | LEQ | GT | GEQ ) expression  # compareCondition
+          ;
+
+expression : ( PLUS | MINUS )? term ( ( PLUS | MINUS ) term )* ;
+
+term      : factor ( ( STAR | SLASH ) factor )* ;
+
+factor    : IDENT       # identFactor
+          | NUMBER      # numberFactor
+          | LPAREN expression RPAREN  # parenFactor
+          ;`;
+
+const DEFAULT_CODE = `var x, y, z;
+begin
+  x := 5;
+  y := x * 3 + 1;
+  if x < y then
+    z := y - x
+  else
+    z := 0
+end.`;
+
+// ─── State ───────────────────────────────────────────────────────────────────
+document.getElementById('ta-lexer').value  = DEFAULT_LEXER;
+document.getElementById('ta-parser').value = DEFAULT_PARSER;
+document.getElementById('ta-code').value   = DEFAULT_CODE;
+
+let logs = [];
+let currentTab = 'console';
+
+function switchTab(name) {
+  currentTab = name;
+  document.querySelectorAll('.tab-btn').forEach(b =>
+    b.classList.toggle('active', b.textContent.toLowerCase().startsWith(name))
+  );
+  document.querySelectorAll('.tab-content').forEach(c =>
+    c.classList.remove('active')
+  );
+  document.getElementById(name + '-view').classList.add('active');
+}
+
+function log(msg, cls='log-info') {
+  logs.push({ msg, cls });
+  const cv = document.getElementById('console-view');
+  const d = document.createElement('div');
+  d.className = cls;
+  d.textContent = msg;
+  cv.appendChild(d);
+  cv.scrollTop = cv.scrollHeight;
+}
+
+function clearOutputs() {
+  logs = [];
+  document.getElementById('console-view').innerHTML = '';
+  document.getElementById('tokens-body').innerHTML = '';
+  document.getElementById('tree-view').innerHTML = '';
+  document.getElementById('st-tokens').textContent = 'Tokens: —';
+  document.getElementById('st-errors').textContent = 'Errors: —';
+  document.getElementById('st-time').textContent = 'Time: —';
+  document.getElementById('st-errors').className = '';
+}
+
+// ─── File I/O ─────────────────────────────────────────────────────────────────
+function loadFile(which) {
+  document.getElementById('file-' + which).click();
+}
+
+function onFileLoad(evt, which) {
+  const file = evt.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('ta-' + which).value = e.target.result;
+    log(`Loaded ${file.name} into ${which} panel.`, 'log-ok');
+  };
+  reader.readAsText(file);
+  evt.target.value = '';
+}
+
+function saveFile(which) {
+  const content = document.getElementById('ta-' + which).value;
+  const ext = which === 'code' ? 'txt' : 'g4';
+  const filename = which === 'lexer' ? 'PL0Lexer.g4'
+                 : which === 'parser' ? 'PL0Parser.g4'
+                 : 'input.txt';
+  const blob = new Blob([content], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  log(`Saved ${filename}.`, 'log-ok');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ANTLR4 Grammar Interpreter
+// Parses .g4 grammar text → builds a dynamic Lexer + Parser at runtime
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ─── Lexer grammar parser ─────────────────────────────────────────────────────
+// Returns: { grammarName, rules: [{name, alts: [regexString], skip}] }
+function parseLexerGrammar(src, caseInsensitive) {
+  const lines = src.split('\n');
+  const rules = [];
+  let i = 0;
+
+  // Skip header
+  while (i < lines.length) {
+    const l = lines[i].trim();
+    if (l.startsWith('lexer grammar')) { i++; break; }
+    i++;
+  }
+
+  // Gather rules (handle multiline)
+  let buf = '';
+  function flushRule(text) {
+    text = text.trim();
+    if (!text) return;
+    // NAME : ... ; optionally with -> skip
+    const m = text.match(/^([A-Z_][A-Z0-9_]*)\s*:\s*([\s\S]+?)\s*;/);
+    if (!m) return;
+    const name = m[1];
+    const body = m[2];
+    const isSkip = /->[ \t]*skip/.test(body);
+    const cleanBody = body.replace(/->[ \t]*\w+/, '').trim();
+    const regex = antlrAltToRegex(cleanBody, caseInsensitive);
+    if (regex) rules.push({ name, regex, skip: isSkip });
+  }
+
+  while (i < lines.length) {
+    const l = lines[i];
+    const stripped = l.replace(/\/\/.*$/, ''); // strip line comments
+    if (stripped.includes(';')) {
+      buf += ' ' + stripped;
+      // may contain multiple rules on one flush
+      let parts = buf.split(';');
+      for (let k = 0; k < parts.length - 1; k++) {
+        flushRule(parts[k]);
+      }
+      buf = parts[parts.length - 1];
+    } else {
+      buf += ' ' + stripped;
+    }
+    i++;
+  }
+  if (buf.trim()) flushRule(buf);
+
+  return rules;
+}
+
+// Convert an ANTLR4 lexer alternative body → JS RegExp source string
+function antlrAltToRegex(body, ci) {
+  // Strip outer parens wrapping everything if present
+  // Handle: 'lit' | [charset] | RULE_REF | ( ... )+ etc.
+  let s = body.trim();
+  // Remove alternative separator (we treat entire body as one pattern for now)
+  // Actually each rule has a single pattern; alternatives separated by | are handled inside
+  return antlrExprToRegex(s, ci);
+}
+
+function antlrExprToRegex(s, ci) {
+  s = s.trim();
+  // Wrap in non-capturing group to handle top-level alternatives
+  return '(?:' + antlrSeqToRegex(s, ci) + ')';
+}
+
+// Convert ANTLR expr (may contain | at top level) to regex
+function antlrSeqToRegex(s, ci) {
+  // Split on top-level | (not inside parens/brackets/quotes)
+  const alts = splitTopLevel(s, '|');
+  if (alts.length > 1) {
+    return alts.map(a => antlrConcatToRegex(a.trim(), ci)).join('|');
+  }
+  return antlrConcatToRegex(s, ci);
+}
+
+// Split string on delimiter only at depth 0 (brackets, parens, quotes)
+function splitTopLevel(s, delim) {
+  const parts = [];
+  let depth = 0, inStr = false, strCh = '', start = 0;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (inStr) {
+      if (c === '\\') { i++; continue; }
+      if (c === strCh) inStr = false;
+      continue;
+    }
+    if (c === "'" || c === '"') { inStr = true; strCh = c; continue; }
+    if (c === '(' || c === '[') { depth++; continue; }
+    if (c === ')' || c === ']') { depth--; continue; }
+    if (depth === 0 && s[i] === delim) {
+      parts.push(s.slice(start, i));
+      start = i + 1;
+    }
+  }
+  parts.push(s.slice(start));
+  return parts;
+}
+
+// Convert a concatenation of ANTLR atoms to regex
+function antlrConcatToRegex(s, ci) {
+  s = s.trim();
+  if (!s) return '';
+  const atoms = [];
+  let i = 0;
+  while (i < s.length) {
+    // skip whitespace
+    if (/\s/.test(s[i])) { i++; continue; }
+
+    // String literal: 'abc'
+    if (s[i] === "'") {
+      let j = i + 1, lit = '';
+      while (j < s.length && s[j] !== "'") {
+        if (s[j] === '\\') { lit += s[j] + s[j+1]; j += 2; }
+        else lit += s[j++];
+      }
+      j++; // consume closing '
+      // Escape for regex
+      let regexLit = lit.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      if (ci) {
+        // Make each letter case-insensitive
+        regexLit = regexLit.split('').map(c => /[a-zA-Z]/.test(c) ? `[${c.toLowerCase()}${c.toUpperCase()}]` : c).join('');
+      }
+      // Check for quantifier
+      const { q, len } = peekQuantifier(s, j);
+      atoms.push(regexLit + q);
+      i = j + len;
+      continue;
+    }
+
+    // Character class: [...]
+    if (s[i] === '[') {
+      let j = i + 1, cls = '[';
+      while (j < s.length && s[j] !== ']') {
+        if (s[j] === '\\') { cls += s[j] + s[j+1]; j += 2; }
+        else cls += s[j++];
+      }
+      cls += ']'; j++;
+      if (ci) cls = makeCaseInsensitiveClass(cls);
+      const { q, len } = peekQuantifier(s, j);
+      atoms.push(cls + q);
+      i = j + len;
+      continue;
+    }
+
+    // Group: (...)
+    if (s[i] === '(') {
+      const end = findMatchingParen(s, i);
+      const inner = s.slice(i + 1, end);
+      const { q, len } = peekQuantifier(s, end + 1);
+      atoms.push('(?:' + antlrSeqToRegex(inner, ci) + ')' + q);
+      i = end + 1 + len;
+      continue;
+    }
+
+    // Dot (any char)
+    if (s[i] === '.') {
+      atoms.push('[\\s\\S]');
+      i++;
+      continue;
+    }
+
+    // Tilde negation ~'x' or ~[...]
+    if (s[i] === '~') {
+      i++;
+      if (s[i] === "'") {
+        let j = i + 1, lit = '';
+        while (j < s.length && s[j] !== "'") lit += s[j++];
+        j++;
+        lit = lit.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        atoms.push(`[^${lit}]`);
+        i = j;
+      } else if (s[i] === '[') {
+        let j = i + 1, cls = '';
+        while (j < s.length && s[j] !== ']') {
+          if (s[j] === '\\') { cls += s[j] + s[j+1]; j += 2; }
+          else cls += s[j++];
+        }
+        j++;
+        atoms.push('[^' + cls + ']');
+        i = j;
+      }
+      continue;
+    }
+
+    // EOF token reference
+    if (s.slice(i, i + 3) === 'EOF') {
+      atoms.push('$');
+      i += 3;
+      continue;
+    }
+
+    // Token reference (e.g., IDENT used inside a rule) — skip, treat as empty
+    if (/[A-Z_]/.test(s[i])) {
+      let j = i;
+      while (j < s.length && /[A-Z0-9_]/.test(s[j])) j++;
+      i = j; // we just skip token references inside lexer rules
+      continue;
+    }
+
+    // Unknown char — skip
+    i++;
+  }
+  return atoms.join('');
+}
+
+function peekQuantifier(s, i) {
+  while (i < s.length && /\s/.test(s[i])) i++;
+  if (i < s.length && (s[i] === '*' || s[i] === '+' || s[i] === '?')) {
+    const q = s[i];
+    return { q, len: 1 + (i - i) }; // len relative to original i
+  }
+  return { q: '', len: 0 };
+}
+
+// Rewritten peekQuantifier that returns offset from given position
+function peekQuantifier(s, pos) {
+  let p = pos;
+  while (p < s.length && /\s/.test(s[p])) p++;
+  if (p < s.length && (s[p] === '*' || s[p] === '+' || s[p] === '?')) {
+    return { q: s[p], len: (p - pos) + 1 };
+  }
+  return { q: '', len: 0 };
+}
+
+function findMatchingParen(s, start) {
+  let depth = 0;
+  for (let i = start; i < s.length; i++) {
+    if (s[i] === '(') depth++;
+    else if (s[i] === ')') { depth--; if (depth === 0) return i; }
+  }
+  return s.length - 1;
+}
+
+function makeCaseInsensitiveClass(cls) {
+  // [Aa] etc — expand ranges like a-z to a-zA-Z
+  // For simplicity, duplicate any letter ranges
+  return cls.replace(/([a-z])-([a-z])/g, (_, a, b) => `${a}-${b}${a.toUpperCase()}-${b.toUpperCase()}`)
+            .replace(/([A-Z])-([A-Z])/g, (_, a, b) => `${a}-${b}${a.toLowerCase()}-${b.toLowerCase()}`);
+}
+
+// ─── Dynamic Lexer ────────────────────────────────────────────────────────────
+class DynamicLexer {
+  constructor(rules) {
+    this.rules = rules; // [{name, regex(source), skip}]
+    // Compile each to anchored RegExp
+    this.compiled = rules.map(r => {
+      try {
+        return new RegExp('^' + r.regex, 'su'); // unicode + dotAll
+      } catch(e) {
+        try { return new RegExp('^' + r.regex, 's'); }
+        catch(e2) {
+          log(`⚠ Regex compile error for ${r.name}: ${e2.message}`, 'log-warn');
+          return null;
+        }
+      }
+    });
+  }
+
+  tokenize(input) {
+    const tokens = [];
+    let pos = 0, line = 1, col = 0;
+    const errors = [];
+
+    while (pos < input.length) {
+      let matched = false;
+      for (let i = 0; i < this.rules.length; i++) {
+        const rx = this.compiled[i];
+        if (!rx) continue;
+        const sub = input.slice(pos);
+        const m = sub.match(rx);
+        if (m && m[0].length > 0) {
+          const text = m[0];
+          if (!this.rules[i].skip) {
+            tokens.push({ type: i, name: this.rules[i].name, text, line, col, pos });
+          }
+          // Advance line/col
+          for (const c of text) {
+            if (c === '\n') { line++; col = 0; } else col++;
+          }
+          pos += text.length;
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) {
+        errors.push(`Unexpected character '${input[pos]}' at line ${line}, col ${col}`);
+        col++;
+        pos++;
+      }
+    }
+
+    // EOF token
+    tokens.push({ type: -1, name: 'EOF', text: '', line, col, pos });
+    return { tokens, errors };
+  }
+}
+
+// ─── Parser grammar parser ────────────────────────────────────────────────────
+// Returns: { rules: [{name, alts: [{elems: [...], label}]}], startRule }
+function parseParserGrammar(src) {
+  // Strip comments
+  src = src.replace(/\/\/[^\n]*/g, '');
+  src = src.replace(/\/\*[\s\S]*?\*\//g, '');
+
+  const rulesRaw = [];
+  // Extract: ruleName : body ;
+  const ruleRx = /([a-z_][a-zA-Z0-9_]*)\s*:\s*([\s\S]+?)\s*;/g;
+  let m;
+  while ((m = ruleRx.exec(src)) !== null) {
+    const name = m[1];
+    const body = m[2];
+    // Skip options block
+    if (name === 'options') continue;
+    rulesRaw.push({ name, body });
+  }
+
+  if (!rulesRaw.length) return null;
+
+  const ruleMap = {};
+  const ruleNames = rulesRaw.map(r => r.name);
+
+  for (const r of rulesRaw) {
+    const alts = parseParserAlts(r.body, ruleNames);
+    ruleMap[r.name] = alts;
+  }
+
+  return { ruleMap, startRule: rulesRaw[0].name, ruleNames };
+}
+
+// Parse the RHS of a parser rule into alternatives
+function parseParserAlts(body, ruleNames) {
+  // Top-level alternatives split by |
+  const parts = splitTopLevel(body, '|');
+  return parts.map(part => {
+    part = part.trim();
+    // Extract label (#name)
+    const labelMatch = part.match(/#\s*(\w+)\s*$/);
+    const label = labelMatch ? labelMatch[1] : null;
+    if (labelMatch) part = part.slice(0, labelMatch.index).trim();
+    const elems = parseParserSeq(part, ruleNames);
+    return { elems, label };
+  });
+}
+
+// Parse a sequence of parser elements
+function parseParserSeq(seq, ruleNames) {
+  const elems = [];
+  let i = 0;
+  seq = seq.trim();
+
+  while (i < seq.length) {
+    if (/\s/.test(seq[i])) { i++; continue; }
+
+    // op= assignment prefix (e.g. op=(EQ|HASH))
+    const opAssign = seq.slice(i).match(/^(\w+)\s*=\s*(?=[\('])/);
+    if (opAssign) {
+      i += opAssign[0].length;
+      // Fall through to parse the RHS
+    }
+
+    // Group (...)
+    if (seq[i] === '(') {
+      const end = findMatchingParen(seq, i);
+      const inner = seq.slice(i + 1, end);
+      const { q, len } = peekQuantifier(seq, end + 1);
+      elems.push({ kind: 'group', alts: parseParserAlts(inner, ruleNames), quantifier: q || '1' });
+      i = end + 1 + len;
+      continue;
+    }
+
+    // String literal: 'x'
+    if (seq[i] === "'") {
+      let j = i + 1, lit = '';
+      while (j < seq.length && seq[j] !== "'") {
+        if (seq[j] === '\\') { lit += seq[j+1]; j += 2; }
+        else lit += seq[j++];
+      }
+      j++;
+      const { q, len } = peekQuantifier(seq, j);
+      elems.push({ kind: 'literal', value: lit, quantifier: q || '1' });
+      i = j + len;
+      continue;
+    }
+
+    // Identifier (rule or token)
+    if (/[a-zA-Z_]/.test(seq[i])) {
+      let j = i;
+      while (j < seq.length && /[a-zA-Z0-9_]/.test(seq[j])) j++;
+      const name = seq.slice(i, j);
+      const { q, len } = peekQuantifier(seq, j);
+
+      // Skip EOF
+      if (name === 'EOF') { i = j + len; continue; }
+
+      const isToken = /^[A-Z]/.test(name) || name === 'EOF';
+      elems.push({ kind: isToken ? 'token' : 'rule', name, quantifier: q || '1' });
+      i = j + len;
+      continue;
+    }
+
+    i++;
+  }
+  return elems;
+}
+
+// ─── Dynamic Parser (recursive descent) ──────────────────────────────────────
+class ParseNode {
+  constructor(ruleName, label) {
+    this.ruleName = ruleName;
+    this.label = label;
+    this.children = [];
+  }
+}
+
+class TokenNode {
+  constructor(token) { this.token = token; }
+}
+
+class DynamicParser {
+  constructor(grammar, lexerRules) {
+    this.grammar = grammar;  // { ruleMap, startRule, ruleNames }
+    this.lexerRules = lexerRules;
+    this.tokens = [];
+    this.pos = 0;
+    this.errors = [];
+    this.maxDepth = 0;
+    this._depth = 0;
+  }
+
+  parse(tokens) {
+    this.tokens = tokens.filter(t => t.name !== 'WS' && t.name !== 'COMMENT');
+    this.pos = 0;
+    this.errors = [];
+    return this.parseRule(this.grammar.startRule);
+  }
+
+  peek() {
+    if (this.pos < this.tokens.length) return this.tokens[this.pos];
+    return { type: -1, name: 'EOF', text: '', line: 0, col: 0 };
+  }
+
+  consume(expectedName) {
+    const tok = this.peek();
+    if (expectedName && tok.name !== expectedName) {
+      this.errors.push(`Expected ${expectedName} but got '${tok.text}' (${tok.name}) at line ${tok.line}, col ${tok.col}`);
+    }
+    if (this.pos < this.tokens.length) this.pos++;
+    return tok;
+  }
+
+  parseRule(ruleName) {
+    if (this._depth > 200) {
+      this.errors.push(`Max recursion depth at rule '${ruleName}'`);
+      return null;
+    }
+    this._depth++;
+    const alts = this.grammar.ruleMap[ruleName];
+    if (!alts) {
+      this._depth--;
+      this.errors.push(`Unknown rule: ${ruleName}`);
+      return null;
+    }
+
+    const node = new ParseNode(ruleName);
+
+    // Try each alternative; use backtracking for non-determinism
+    const savedPos = this.pos;
+    const savedErrors = this.errors.length;
+    let matched = false;
+
+    for (const alt of alts) {
+      const result = this.tryAlt(alt);
+      if (result !== null) {
+        node.children = result;
+        node.label = alt.label;
+        matched = true;
+        break;
+      }
+      // Backtrack
+      this.pos = savedPos;
+      this.errors.length = savedErrors;
+    }
+
+    if (!matched) {
+      // Empty alternative OK if one exists
+      const hasEmpty = alts.some(a => a.elems.length === 0);
+      if (!hasEmpty) {
+        const tok = this.peek();
+        this.errors.push(`No alternative matched for rule '${ruleName}' at '${tok.text}' (line ${tok.line})`);
+      }
+    }
+
+    this._depth--;
+    return node;
+  }
+
+  tryAlt(alt) {
+    if (alt.elems.length === 0) return []; // empty alt always matches
+
+    const savedPos = this.pos;
+    const savedErrLen = this.errors.length;
+    const children = [];
+
+    for (const elem of alt.elems) {
+      const result = this.parseElem(elem);
+      if (result === false) {
+        this.pos = savedPos;
+        this.errors.length = savedErrLen;
+        return null;
+      }
+      if (result !== null && result !== undefined) {
+        if (Array.isArray(result)) children.push(...result);
+        else children.push(result);
+      }
+    }
+    return children;
+  }
+
+  parseElem(elem) {
+    const q = elem.quantifier;
+
+    if (q === '?' || q === '*' || q === '+') {
+      return this.parseQuantified(elem);
+    }
+
+    return this.parseElemOnce(elem);
+  }
+
+  parseQuantified(elem) {
+    const q = elem.quantifier;
+    const results = [];
+    let count = 0;
+
+    while (true) {
+      const savedPos = this.pos;
+      const savedErr = this.errors.length;
+      const r = this.parseElemOnce(elem);
+      if (r === false || r === null) {
+        this.pos = savedPos;
+        this.errors.length = savedErr;
+        break;
+      }
+      if (Array.isArray(r)) results.push(...r);
+      else results.push(r);
+      count++;
+      if (q === '?') break; // at most 1
+    }
+
+    if (q === '+' && count === 0) return false;
+    return results;
+  }
+
+  parseElemOnce(elem) {
+    if (elem.kind === 'token') {
+      const tok = this.peek();
+      if (tok.name === elem.name) {
+        this.pos++;
+        return new TokenNode(tok);
+      }
+      return false;
+    }
+
+    if (elem.kind === 'literal') {
+      const tok = this.peek();
+      if (tok.text === elem.value) {
+        this.pos++;
+        return new TokenNode(tok);
+      }
+      return false;
+    }
+
+    if (elem.kind === 'rule') {
+      const savedPos = this.pos;
+      const savedErr = this.errors.length;
+      const node = this.parseRule(elem.name);
+      if (node && node.children !== undefined) {
+        // Check if we advanced or it was an empty match
+        return node;
+      }
+      this.pos = savedPos;
+      this.errors.length = savedErr;
+      return false;
+    }
+
+    if (elem.kind === 'group') {
+      const savedPos = this.pos;
+      const savedErr = this.errors.length;
+      for (const alt of elem.alts) {
+        const r = this.tryAlt(alt);
+        if (r !== null) return r;
+        this.pos = savedPos;
+        this.errors.length = savedErr;
+      }
+      return false;
+    }
+
+    return false;
+  }
+}
+
+// ─── Parse Tree Renderer ──────────────────────────────────────────────────────
+function renderTree(node, prefix, isLast, lines) {
+  if (!node) return;
+  const connector = isLast ? '└── ' : '├── ';
+  const childPrefix = prefix + (isLast ? '    ' : '│   ');
+
+  if (node instanceof TokenNode) {
+    lines.push({ text: prefix + connector + `<span class="tree-token">${esc(node.token.name)}</span>: <span style="color:#94a3b8">${esc(JSON.stringify(node.token.text))}</span>`, raw: true });
+    return;
+  }
+
+  const label = node.label ? ` <span style="color:var(--yellow)">#${node.label}</span>` : '';
+  lines.push({ text: prefix + connector + `<span class="tree-rule">${esc(node.ruleName)}</span>${label}`, raw: true });
+
+  const children = node.children || [];
+  for (let i = 0; i < children.length; i++) {
+    renderTree(children[i], childPrefix, i === children.length - 1, lines);
+  }
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ─── Main parse action ────────────────────────────────────────────────────────
+document.getElementById('btn-parse').addEventListener('click', doParseAction);
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') doParseAction();
+});
+
+function doParseAction() {
+  clearOutputs();
+  const t0 = performance.now();
+
+  const lexerSrc  = document.getElementById('ta-lexer').value.trim();
+  const parserSrc = document.getElementById('ta-parser').value.trim();
+  const inputSrc  = document.getElementById('ta-code').value;
+  const ci = document.getElementById('chk-ci').checked;
+
+  if (!lexerSrc) { log('⚠ Lexer grammar is empty.', 'log-warn'); return; }
+  if (!parserSrc) { log('⚠ Parser grammar is empty.', 'log-warn'); return; }
+
+  // ── 1. Build lexer ──
+  log('Building lexer…', 'log-info');
+  let lexerRules;
+  try {
+    lexerRules = parseLexerGrammar(lexerSrc, ci);
+    if (!lexerRules.length) throw new Error('No lexer rules found.');
+    log(`  ${lexerRules.length} rules: ${lexerRules.map(r=>r.name).join(', ')}`, 'log-info');
+  } catch(e) {
+    log('✗ Lexer grammar error: ' + e.message, 'log-err');
+    return;
+  }
+
+  // ── 2. Tokenize ──
+  log('Tokenizing input…', 'log-info');
+  const lexer = new DynamicLexer(lexerRules);
+  const { tokens, errors: lexErrors } = lexer.tokenize(inputSrc);
+
+  lexErrors.forEach(e => log('✗ ' + e, 'log-err'));
+
+  // Render token table
+  const tbody = document.getElementById('tokens-body');
+  tokens.forEach((t, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${i}</td><td class="tok-type">${esc(t.type)}</td><td class="tok-type">${esc(t.name)}</td><td class="tok-val">${esc(JSON.stringify(t.text))}</td><td>${t.line}</td><td>${t.col}</td><td>${t.name==='WS'||t.name==='COMMENT'?'HIDDEN':'DEFAULT'}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  const visibleTokens = tokens.filter(t => t.name !== 'EOF');
+  log(`  ${visibleTokens.length} tokens produced.`, 'log-ok');
+  document.getElementById('st-tokens').textContent = `Tokens: ${visibleTokens.length}`;
+
+  if (lexErrors.length) {
+    log(`  ${lexErrors.length} lexer error(s).`, 'log-warn');
+  }
+
+  // ── 3. Build parser ──
+  log('Building parser…', 'log-info');
+  let parserGrammar;
+  try {
+    parserGrammar = parseParserGrammar(parserSrc);
+    if (!parserGrammar) throw new Error('No parser rules found.');
+    log(`  ${parserGrammar.ruleNames.length} rules. Start rule: '${parserGrammar.startRule}'`, 'log-info');
+  } catch(e) {
+    log('✗ Parser grammar error: ' + e.message, 'log-err');
+    return;
+  }
+
+  // ── 4. Parse ──
+  log('Parsing…', 'log-info');
+  const parser = new DynamicParser(parserGrammar, lexerRules);
+  const tree = parser.parse(tokens);
+
+  const parseErrors = parser.errors;
+  parseErrors.forEach(e => log('✗ ' + e, 'log-err'));
+
+  const totalErrors = lexErrors.length + parseErrors.length;
+  const errEl = document.getElementById('st-errors');
+  errEl.textContent = `Errors: ${totalErrors}`;
+  errEl.className = totalErrors > 0 ? 'err' : 'ok';
+
+  if (totalErrors === 0) {
+    log('✓ Parse completed successfully.', 'log-ok');
+  } else {
+    log(`  ${parseErrors.length} parse error(s).`, 'log-warn');
+  }
+
+  // ── 5. Render tree ──
+  const treeEl = document.getElementById('tree-view');
+  if (tree) {
+    const lines = [];
+    const label = tree.label ? ` #${tree.label}` : '';
+    lines.push({ text: `<span class="tree-rule">${esc(tree.ruleName)}</span>${label ? `<span style="color:var(--yellow)"> #${label}</span>` : ''}`, raw: true });
+    const ch = tree.children || [];
+    for (let i = 0; i < ch.length; i++) {
+      renderTree(ch[i], '', i === ch.length - 1, lines);
+    }
+    lines.forEach(({ text, raw }) => {
+      const d = document.createElement('div');
+      d.className = 'tree-node';
+      d.innerHTML = text;
+      treeEl.appendChild(d);
+    });
+  } else {
+    treeEl.innerHTML = '<div class="tree-err">No parse tree generated.</div>';
+  }
+
+  const elapsed = (performance.now() - t0).toFixed(1);
+  document.getElementById('st-time').textContent = `Time: ${elapsed} ms`;
+  log(`Done in ${elapsed} ms.`, 'log-info');
+
+  // Auto-switch to tree if no errors
+  if (totalErrors === 0) switchTab('tree');
+}
+
+// ─── Run on load ─────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  log('ANTLR4 Lab ready. Press ▶ Parse or Ctrl+Enter to run.', 'log-info');
+  log('Tip: Use the Case-insensitive toggle to match keywords regardless of case.', 'log-info');
+});
+</script>
+</body>
+</html>
