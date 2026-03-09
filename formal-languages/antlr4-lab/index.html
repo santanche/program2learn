@@ -568,54 +568,109 @@ function saveFile(which) {
 // ══════════════════════════════════════════════════════════════════════════════
 
 // ─── Lexer grammar parser ─────────────────────────────────────────────────────
-// Returns: { grammarName, rules: [{name, alts: [regexString], skip}] }
+// Returns: [{name, regex, skip}]
+// Correctly handles semicolons inside string literals like ';' or ':='
 function parseLexerGrammar(src, caseInsensitive) {
-  const lines = src.split('\n');
+  // Strip line comments (but not inside strings)
+  src = stripLineComments(src);
+
   const rules = [];
-  let i = 0;
 
-  // Skip header
-  while (i < lines.length) {
-    const l = lines[i].trim();
-    if (l.startsWith('lexer grammar')) { i++; break; }
-    i++;
-  }
+  // Split the entire source into rule-sized chunks by finding the
+  // TERMINATING semicolon of each rule — i.e. a ';' that is NOT inside
+  // a string literal or character class.
+  const ruleChunks = splitOnTopLevelSemicolons(src);
 
-  // Gather rules (handle multiline)
-  let buf = '';
-  function flushRule(text) {
-    text = text.trim();
-    if (!text) return;
-    // NAME : ... ; optionally with -> skip
-    const m = text.match(/^([A-Z_][A-Z0-9_]*)\s*:\s*([\s\S]+?)\s*;/);
-    if (!m) return;
+  for (const chunk of ruleChunks) {
+    const text = chunk.trim();
+    if (!text) continue;
+    // Skip the grammar header line: "lexer grammar Foo;"  (already consumed above, but double-check)
+    if (/^lexer\s+grammar\b/.test(text) || /^parser\s+grammar\b/.test(text)) continue;
+    // Skip options block
+    if (/^options\s*\{/.test(text)) continue;
+
+    // Match:  TOKEN_NAME  :  body
+    const m = text.match(/^([A-Z_][A-Z0-9_]*)\s*:\s*([\s\S]+)$/);
+    if (!m) continue;
+
     const name = m[1];
-    const body = m[2];
-    const isSkip = /->[ \t]*skip/.test(body);
+    const body = m[2].trim();
+    const isSkip = /->[ \t]*skip\b/.test(body);
     const cleanBody = body.replace(/->[ \t]*\w+/, '').trim();
     const regex = antlrAltToRegex(cleanBody, caseInsensitive);
     if (regex) rules.push({ name, regex, skip: isSkip });
   }
 
-  while (i < lines.length) {
-    const l = lines[i];
-    const stripped = l.replace(/\/\/.*$/, ''); // strip line comments
-    if (stripped.includes(';')) {
-      buf += ' ' + stripped;
-      // may contain multiple rules on one flush
-      let parts = buf.split(';');
-      for (let k = 0; k < parts.length - 1; k++) {
-        flushRule(parts[k]);
-      }
-      buf = parts[parts.length - 1];
-    } else {
-      buf += ' ' + stripped;
-    }
-    i++;
-  }
-  if (buf.trim()) flushRule(buf);
-
   return rules;
+}
+
+// Strip // line comments, being careful not to touch content inside ' ' strings
+function stripLineComments(src) {
+  let out = '', i = 0;
+  while (i < src.length) {
+    if (src[i] === "'" ) {
+      // consume string literal verbatim
+      out += src[i++];
+      while (i < src.length) {
+        if (src[i] === '\\') { out += src[i++]; if (i < src.length) out += src[i++]; continue; }
+        out += src[i];
+        if (src[i++] === "'") break;
+      }
+    } else if (src[i] === '/' && src[i+1] === '/') {
+      // skip until end of line
+      while (i < src.length && src[i] !== '\n') i++;
+    } else {
+      out += src[i++];
+    }
+  }
+  return out;
+}
+
+// Split source on semicolons that are NOT inside string literals or [ ] classes
+function splitOnTopLevelSemicolons(src) {
+  const chunks = [];
+  let buf = '', i = 0, depth = 0;
+
+  while (i < src.length) {
+    const c = src[i];
+
+    if (c === "'" ) {
+      // string literal
+      buf += c; i++;
+      while (i < src.length) {
+        if (src[i] === '\\') { buf += src[i++]; if (i < src.length) buf += src[i++]; continue; }
+        buf += src[i];
+        if (src[i++] === "'") break;
+      }
+      continue;
+    }
+
+    if (c === '[') {
+      depth++;
+      buf += c; i++;
+      // consume character class (ANTLR allows \] inside)
+      while (i < src.length) {
+        if (src[i] === '\\') { buf += src[i++]; if (i < src.length) buf += src[i++]; continue; }
+        buf += src[i];
+        if (src[i++] === ']') { depth--; break; }
+      }
+      continue;
+    }
+
+    if (c === '(') { depth++; buf += c; i++; continue; }
+    if (c === ')') { depth--; buf += c; i++; continue; }
+
+    if (c === ';' && depth === 0) {
+      chunks.push(buf);
+      buf = '';
+      i++;
+      continue;
+    }
+
+    buf += c; i++;
+  }
+  if (buf.trim()) chunks.push(buf);
+  return chunks;
 }
 
 // Convert an ANTLR4 lexer alternative body → JS RegExp source string
