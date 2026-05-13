@@ -16,7 +16,11 @@ Considere a seguinte versão simplificada do grafo e a respectiva transformaçã
 Escreva regras em Prolog que sejam capazes de realizar as seguintes tarefas:
 * `has_symptom(Disease, Symptom)` - Indica se uma doença tem um sintoma independentemente do seu peso.
 * `shares_symptom(D1, D2, Symptom)` - Indica se duas doenças compartilham um sintoma independentemente do seu peso.
-* `disease_similarity(D1, D2, Score)` - Calcula o score de similaridade entre doenças, que consiste no somatório da similaridade por sintoma, considerando todos os sintomas compartilhados. A similaridade por sintoma é calculada como a média dos pesos daquele sintoma para as doenças associadas.
+* `disease_similarity(D1, D2, Score)` - Calcula o score de similaridade entre doenças, que consiste no somatório da similaridade por sintoma, considerando todos os sintomas compartilhados. A similaridade por sintoma entre as doenças `A` e `B` é calculada como:
+
+`similarity = 1 - abs(PSa - PSb)`
+
+Onde `PSa` é o peso do sintoma da doença `A` e `PSb` é o peso do sintoma para a doença `B`.
 * `disease_score(Symptoms, Disease, TotalScore)` - Dada uma lista de sintomas, a regra retorna as possíveis doenças e o respectivo score para cada uma, que consiste na soma dos pesos dos sintomas para aquela doença. Esta regra pode dar suporte ao raciocínio clínico.
 
 As regras devem ser validadas no [Tau Prolog](https://santanche.github.io/web2learn/frameworks/tau-prolog/) e para o lab deve ser enviado um arquivo texto `.pl`. Não devem ser usados LLMs para a construção das regras.
