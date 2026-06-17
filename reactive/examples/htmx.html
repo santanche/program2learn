@@ -12,13 +12,12 @@
     button { margin: 5px 5px 5px 0; }
     .output { background: #f5f5f5; padding: 10px; min-height: 30px; }
     .pipeline { font-family: monospace; color: #555; margin-bottom: 8px; }
+    .result { font-weight: bold; color: #333; }
   </style>
 </head>
 <body>
 
 <h1>🟢 HTMX Lab — Mesmo UI, Modelo Hipermídia</h1>
-
-<!-- ===================== -->
 
 <!-- EXEMPLO 1 -->
 
@@ -26,16 +25,21 @@
 <h2>1. Clique → mensagem</h2>
 <div class="pipeline">click → HTTP → HTML</div>
 
-<button 
-hx-get="/ex1" 
-hx-target="#out1" 
-hx-swap="innerHTML">
-Clique </button>
+<div id="widget1"></div>
 
 <div id="out1" class="output"></div>
-</div>
 
-<!-- ===================== -->
+<textarea id="code1">
+<button
+  hx-get="/ex1"
+  hx-target="#out1"
+  hx-swap="innerHTML">
+  Clique
+</button>
+</textarea>
+
+<button onclick="runCode(1)">Executar</button> <button onclick="stopCode(1)">Parar</button>
+</div>
 
 <!-- EXEMPLO 2 -->
 
@@ -43,16 +47,21 @@ Clique </button>
 <h2>2. Clique → contador (estado no servidor)</h2>
 <div class="pipeline">click → HTTP → servidor → HTML</div>
 
-<button 
-hx-get="/ex2" 
-hx-target="#out2" 
-hx-swap="innerHTML">
-Clique </button>
+<div id="widget2"></div>
 
 <div id="out2" class="output"></div>
-</div>
 
-<!-- ===================== -->
+<textarea id="code2">
+<button
+  hx-get="/ex2"
+  hx-target="#out2"
+  hx-swap="innerHTML">
+  Clique
+</button>
+</textarea>
+
+<button onclick="runCode(2)">Executar</button> <button onclick="stopCode(2)">Parar</button>
+</div>
 
 <!-- EXEMPLO 3 -->
 
@@ -60,16 +69,20 @@ Clique </button>
 <h2>3. Tempo → atualização</h2>
 <div class="pipeline">interval → HTTP polling → HTML</div>
 
-<div 
-  hx-get="/ex3" 
-  hx-trigger="every 1s" 
-  hx-target="#out3">
-</div>
+<div id="widget3"></div>
 
 <div id="out3" class="output"></div>
-</div>
 
-<!-- ===================== -->
+<textarea id="code3">
+<div
+  hx-get="/ex3"
+  hx-trigger="every 1s"
+  hx-target="#out3">
+</div>
+</textarea>
+
+<button onclick="runCode(3)">Executar</button> <button onclick="stopCode(3)">Parar</button>
+</div>
 
 <!-- EXEMPLO 4 -->
 
@@ -77,43 +90,68 @@ Clique </button>
 <h2>4. Input → debounce → texto</h2>
 <div class="pipeline">keyup → delay → HTTP → HTML</div>
 
-<input 
-name="q"
-hx-get="/ex4"
-hx-trigger="keyup changed delay:500ms"
-hx-target="#out4"
-placeholder="Digite..." />
+<div id="widget4"></div>
 
 <div id="out4" class="output"></div>
-</div>
 
-<!-- ===================== -->
+<textarea id="code4">
+<input
+  name="q"
+  hx-get="/ex4"
+  hx-trigger="keyup changed delay:500ms"
+  hx-target="#out4"
+  placeholder="Digite..." />
+</textarea>
+
+<button onclick="runCode(4)">Executar</button> <button onclick="stopCode(4)">Parar</button>
+</div>
 
 <!-- EXEMPLO 5 -->
 
 <div class="cell">
-<h2>5. Input → “API” → resultado</h2>
+<h2>5. Input → "API" → resultado</h2>
 <div class="pipeline">keyup → delay → HTTP → HTML</div>
 
-<input 
-name="q"
-hx-get="/ex5"
-hx-trigger="keyup changed delay:400ms"
-hx-target="#out5"
-placeholder="Buscar..." />
+<div id="widget5"></div>
 
 <div id="out5" class="output"></div>
+
+<textarea id="code5">
+<input
+  name="q"
+  hx-get="/ex5"
+  hx-trigger="keyup changed delay:400ms"
+  hx-target="#out5"
+  placeholder="Buscar..." />
+</textarea>
+
+<button onclick="runCode(5)">Executar</button> <button onclick="stopCode(5)">Parar</button>
 </div>
-
-<!-- ===================== -->
-
-<!-- "SERVIDOR" SIMULADO -->
 
 <script>
 let counter = 0;
 let time = 0;
 
 setInterval(() => time++, 1000);
+
+function runCode(id) {
+  stopCode(id);
+  if (id === 3) time = 0;
+  const code = document.getElementById('code' + id).value;
+  const widget = document.getElementById('widget' + id);
+  const out = document.getElementById('out' + id);
+  out.innerText = '';
+  widget.innerHTML = code;
+  htmx.process(widget);
+}
+
+function stopCode(id) {
+  const widget = document.getElementById('widget' + id);
+  const out = document.getElementById('out' + id);
+  if (widget) widget.innerHTML = '';
+  if (out) out.innerText = '';
+  if (id === 2) counter = 0;
+}
 
 document.body.addEventListener("htmx:configRequest", (event) => {
   const url = event.detail.path;
@@ -142,12 +180,11 @@ document.body.addEventListener("htmx:configRequest", (event) => {
     response = "Resultado para: " + (params.q || "");
   }
 
-  // Intercepta requisição e retorna resposta fake
   event.preventDefault();
 
   setTimeout(() => {
     event.detail.xhr.respond(200, {}, response);
-  }, 300); // simula latência
+  }, 300);
 });
 </script>
 
