@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCADA — Vue (State-Based)</title>
+  <link rel="stylesheet" href="scada.css">
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>SCADA SIMULATION</h1>
+      <p>Reactive Programming Paradigms Lab</p>
+    </div>
+    <span class="approach-badge vue">STATE-BASED · VUE</span>
+  </header>
+
+  <nav class="nav">
+    <a href="index.html">← Back</a>
+    <a href="htmx.html">HTMX</a>
+    <a href="vue.html" class="vue">Vue</a>
+    <a href="rxjs.html">RxJS</a>
+  </nav>
+
+  <div id="app">
+    <div class="scada-panel">
+      <div class="panel-title">INDUSTRIAL PLANT CONTROL PANEL</div>
+
+      <div class="components-grid">
+
+        <div class="component-card switch-card">
+          <div class="label">Switch</div>
+          <img :src="switchImg" @click="toggleMachine" alt="switch">
+          <div :class="['status', machineOn ? 'on' : 'off']">{{ machineOn ? 'ON' : 'OFF' }}</div>
+        </div>
+
+        <div class="component-card">
+          <div class="label">Machine</div>
+          <img :src="machineImg" alt="machine">
+          <div :class="['status', machineOn ? 'on' : 'off']">{{ machineOn ? 'ON' : 'OFF' }}</div>
+        </div>
+
+        <div class="component-card">
+          <div class="label">Temperature</div>
+          <img :src="thermoImg" class="tall" alt="thermometer">
+          <div :class="['status', tempLevel]">{{ tempLevel.toUpperCase() }}</div>
+        </div>
+
+        <div class="component-card">
+          <div class="label">Alert</div>
+          <img :src="alertImg" style="width:64px;height:64px" alt="alert light">
+        </div>
+
+        <div class="component-card">
+          <div class="label">Cooler</div>
+          <img :src="coolerImg" alt="cooler">
+          <div :class="['status', coolerOn ? 'on' : 'off']">{{ coolerOn ? 'ON' : 'OFF' }}</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ─── Key section for students ────────────────────────────────── -->
+    <div class="code-section">
+      <h3>setupCorrelations() — STATE-BASED WIRING (VUE)</h3>
+      <pre><span class="cm">// Reactive state is the single source of truth.
+// Computed properties derive new state; watchers trigger side-effects.
+// This function is the only place where correlations are defined.</span>
+
+<span class="kw">function</span> <span class="fn">setupCorrelations</span>(machineOn, tempLevel) {
+
+  <span class="cm">// 1. Derived state: always computed from tempLevel (no explicit event needed)</span>
+  <span class="kw">const</span> <span class="hl">coolerOn</span>  = <span class="fn">computed</span>(() => machineOn.value &amp;&amp; tempLevel.value === <span class="str">'high'</span>)
+  <span class="kw">const</span> <span class="hl">thermoImg</span> = <span class="fn">computed</span>(() => THERMOS[tempLevel.value])
+  <span class="kw">const</span> <span class="hl">alertImg</span>  = <span class="fn">computed</span>(() => ALERTS[tempLevel.value])
+
+  <span class="cm">// 2. Side-effect correlation: machine on/off → start or stop temperature rise</span>
+  <span class="fn">watch</span>(machineOn, on => {
+    on ? <span class="fn">startTemperatureRise</span>() : <span class="fn">resetTemperature</span>()
+  })
+
+  <span class="kw">return</span> { coolerOn, thermoImg, alertImg }
+}</pre>
+    </div>
+  </div>
+
+  <script>
+  const { createApp, ref, computed, watch } = Vue
+
+  const THERMOS = {
+    low:    '../../assets/thermometer-a.svg',
+    medium: '../../assets/thermometer-b.svg',
+    high:   '../../assets/thermometer-c.svg',
+  }
+  const ALERTS = {
+    low:    '../../assets/light-green.svg',
+    medium: '../../assets/light-yellow.svg',
+    high:   '../../assets/light-red.svg',
+  }
+
+  createApp({
+    setup() {
+      // ─── Reactive state (single source of truth) ──────────────────────────
+      const machineOn = ref(false)
+      const tempLevel = ref('low')
+      let tempTimer   = null
+
+      // ─── Temperature helpers ───────────────────────────────────────────────
+      function startTemperatureRise() {
+        tempLevel.value = 'low'
+        tempTimer = setInterval(() => {
+          if      (tempLevel.value === 'low')    tempLevel.value = 'medium'
+          else if (tempLevel.value === 'medium') tempLevel.value = 'high'
+        }, 10000)
+      }
+
+      function resetTemperature() {
+        clearInterval(tempTimer)
+        tempLevel.value = 'low'
+      }
+
+      // ─── THE KEY FUNCTION: defines all component correlations ──────────────
+      function setupCorrelations(machineOn, tempLevel) {
+
+        // 1. Derived state: always computed from tempLevel (no explicit event needed)
+        const coolerOn  = computed(() => machineOn.value && tempLevel.value === 'high')
+        const thermoImg = computed(() => THERMOS[tempLevel.value])
+        const alertImg  = computed(() => ALERTS[tempLevel.value])
+
+        // 2. Side-effect correlation: machine on/off → start or stop temperature rise
+        watch(machineOn, on => {
+          on ? startTemperatureRise() : resetTemperature()
+        })
+
+        return { coolerOn, thermoImg, alertImg }
+      }
+
+      const { coolerOn, thermoImg, alertImg } = setupCorrelations(machineOn, tempLevel)
+
+      // ─── Remaining image derivations (visual mapping, not correlations) ────
+      const switchImg  = computed(() =>
+        machineOn.value ? '../../assets/switch-on.png' : '../../assets/switch-off.png')
+      const machineImg = computed(() =>
+        machineOn.value ? '../../assets/di-pietro-engine.gif' : '../../assets/di-pietro-engine.png')
+      const coolerImg  = computed(() =>
+        coolerOn.value ? '../../assets/evaporative-cooling.gif' : '../../assets/evaporative-cooling.png')
+
+      // ─── Action ───────────────────────────────────────────────────────────
+      function toggleMachine() { machineOn.value = !machineOn.value }
+
+      return {
+        machineOn, tempLevel, coolerOn,
+        switchImg, machineImg, thermoImg, alertImg, coolerImg,
+        toggleMachine,
+      }
+    }
+  }).mount('#app')
+  </script>
+</body>
+</html>
