@@ -135,14 +135,19 @@ let time = 0;
 setInterval(() => time++, 1000);
 
 function runCode(id) {
-  stopCode(id);
-  if (id === 3) time = 0;
-  const code = document.getElementById('code' + id).value;
-  const widget = document.getElementById('widget' + id);
-  const out = document.getElementById('out' + id);
-  out.innerText = '';
-  widget.innerHTML = code;
-  htmx.process(widget);
+  try {
+    stopCode(id);
+    if (id === 3) time = 0;
+    const code = document.getElementById('code' + id).value;
+    const widget = document.getElementById('widget' + id);
+    const out = document.getElementById('out' + id);
+    out.innerText = '';
+    widget.innerHTML = code;
+    htmx.process(widget);
+  } catch(e) {
+    const out = document.getElementById('out' + id);
+    if (out) out.innerText = 'Erro: ' + e.message;
+  }
 }
 
 function stopCode(id) {
@@ -153,9 +158,12 @@ function stopCode(id) {
   if (id === 2) counter = 0;
 }
 
-document.body.addEventListener("htmx:configRequest", (event) => {
-  const url = event.detail.path;
-  const params = event.detail.parameters;
+document.body.addEventListener("htmx:beforeRequest", (event) => {
+  event.preventDefault();
+
+  const elt = event.detail.elt;
+  const url = event.detail.path || (elt && elt.getAttribute('hx-get')) || '';
+  const params = event.detail.parameters || {};
 
   let response = "";
 
@@ -173,17 +181,20 @@ document.body.addEventListener("htmx:configRequest", (event) => {
   }
 
   if (url === "/ex4") {
-    response = "Busca: " + (params.q || "");
+    const q = params.q !== undefined ? params.q : (elt && elt.value) || '';
+    response = "Busca: " + q;
   }
 
   if (url === "/ex5") {
-    response = "Resultado para: " + (params.q || "");
+    const q = params.q !== undefined ? params.q : (elt && elt.value) || '';
+    response = "Resultado para: " + q;
   }
 
-  event.preventDefault();
+  const rawTarget = elt && elt.getAttribute('hx-target');
+  const target = rawTarget ? document.querySelector(rawTarget) : elt;
 
   setTimeout(() => {
-    event.detail.xhr.respond(200, {}, response);
+    if (target) target.innerHTML = response;
   }, 300);
 });
 </script>
