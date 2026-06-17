@@ -35,6 +35,13 @@
     .card h2 { font-size: 1.1rem; color: #e0e0e0; }
     .card p  { font-size: 0.75rem; color: #546e7a; line-height: 1.6; }
     .card .paradigm { font-size: 0.65rem; color: #546e7a; }
+    .section-label {
+      text-align: center;
+      font-size: 0.65rem;
+      letter-spacing: 3px;
+      color: #546e7a;
+      margin: 32px 0 0;
+    }
   </style>
 </head>
 <body>
@@ -57,6 +64,7 @@
     <p style="margin-top:14px;">In each version, find the <strong>setupCorrelations()</strong> function — it is the core of the reactive logic, and the only place where component relationships are defined.</p>
   </div>
 
+  <p class="section-label">REFERENCE IMPLEMENTATIONS</p>
   <div class="cards">
     <a href="htmx.html" class="card htmx">
       <span class="approach-badge htmx">EVENT-BASED</span>
@@ -77,6 +85,30 @@
       <h2>RxJS</h2>
       <p class="paradigm">Observable Streams</p>
       <p>All inputs and outputs are observable streams. Operators transform and combine them to produce derived behaviors.</p>
+    </a>
+  </div>
+
+  <p class="section-label">EXERCISES — implement setupCorrelations() yourself</p>
+  <div class="cards" style="padding-top:16px">
+    <a href="htmx-ex.html" class="card htmx" style="opacity:0.85">
+      <span class="approach-badge htmx">EVENT-BASED ✎</span>
+      <h2>HTMX Exercise</h2>
+      <p class="paradigm">Wire events in the browser</p>
+      <p>The simulation runs but nothing reacts. Fill in the event listeners to connect switch, machine, thermometer, cooler, and alert.</p>
+    </a>
+
+    <a href="vue-ex.html" class="card vue" style="opacity:0.85">
+      <span class="approach-badge vue">STATE-BASED ✎</span>
+      <h2>Vue Exercise</h2>
+      <p class="paradigm">Set up watchers in the browser</p>
+      <p>Reactive state exists but correlations are missing. Use watch() to keep the components in sync.</p>
+    </a>
+
+    <a href="rxjs-ex.html" class="card rxjs" style="opacity:0.85">
+      <span class="approach-badge rxjs">STREAM-BASED ✎</span>
+      <h2>RxJS Exercise</h2>
+      <p class="paradigm">Build the stream pipeline</p>
+      <p>Renderers and helpers are ready. Compose observable streams to connect switch → machine → temperature → cooler.</p>
     </a>
   </div>
 </body>

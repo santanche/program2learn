@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCADA — Vue Exercise</title>
+  <link rel="stylesheet" href="scada.css">
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <style>
+    .ex-panel { margin: 0 24px 24px; }
+    .fn-wrap {
+      background: #0d1117;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .fn-sig {
+      background: #1e293b;
+      padding: 8px 16px;
+      font: 0.75rem/1.5 'Courier New', monospace;
+      color: #82aaff;
+      white-space: pre;
+    }
+    textarea#code {
+      display: block;
+      width: 100%;
+      min-height: 200px;
+      background: #0d1117;
+      color: #c9d1d9;
+      font: 0.75rem/1.65 'Courier New', monospace;
+      border: none;
+      border-top: 1px dashed #1e293b;
+      border-bottom: 1px dashed #1e293b;
+      padding: 12px 16px;
+      resize: vertical;
+      outline: none;
+      tab-size: 2;
+    }
+    .fn-close { background: #1e293b; padding: 8px 16px; font: 0.75rem/1.5 'Courier New', monospace; color: #82aaff; }
+    .controls { display: flex; gap: 10px; align-items: center; padding: 12px 0 0; }
+    .btn { padding: 7px 18px; border: none; border-radius: 5px; font: 0.8rem 'Courier New', monospace; cursor: pointer; letter-spacing: 0.5px; }
+    .btn-run   { background: #1b5e20; color: #fff; }
+    .btn-run:hover { background: #2e7d32; }
+    .btn-reset { background: #263238; color: #90a4ae; }
+    .btn-reset:hover { background: #37474f; }
+    #status { font-size: 0.75rem; font-family: 'Courier New', monospace; }
+    .ok  { color: #a5d6a7; }
+    .err { color: #ef9a9a; }
+    details.hints { margin-top: 16px; }
+    details.hints summary { font-size: 0.75rem; color: #546e7a; cursor: pointer; letter-spacing: 1px; user-select: none; }
+    details.hints summary:hover { color: #90a4ae; }
+    .hints-body { margin-top: 10px; background: #0d1117; border: 1px solid #1e293b; border-radius: 6px; padding: 14px 16px; font: 0.72rem/1.8 'Courier New', monospace; color: #546e7a; }
+    .hints-body .hl  { color: #ffcb6b; }
+    .hints-body .fn  { color: #82aaff; }
+    .hints-body .str { color: #c3e88d; }
+    .hints-body .cm  { color: #3d5464; }
+    .hints-body h4   { color: #90a4ae; margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>SCADA SIMULATION — EXERCISE</h1>
+      <p>Implement <code style="color:#ffcb6b">setupCorrelations()</code> to wire the components together</p>
+    </div>
+    <span class="approach-badge vue">STATE-BASED · VUE</span>
+  </header>
+
+  <nav class="nav">
+    <a href="index.html">← Back</a>
+    <a href="htmx-ex.html">HTMX ✎</a>
+    <a href="vue.html">Solution</a>
+    <a href="rxjs-ex.html">RxJS ✎</a>
+  </nav>
+
+  <!-- ─── Simulation ──────────────────────────────────────────────── -->
+  <div id="app">
+    <div class="scada-panel">
+      <div class="panel-title">INDUSTRIAL PLANT CONTROL PANEL</div>
+      <div class="components-grid">
+
+        <div class="component-card switch-card">
+          <div class="label">Switch</div>
+          <img :src="switchImg" @click="toggleMachine" alt="switch">
+          <div :class="['status', machineOn ? 'on' : 'off']">{{ machineOn ? 'ON' : 'OFF' }}</div>
+        </div>
+
+        <div class="component-card">
+          <div class="label">Machine</div>
+          <img :src="machineImg" alt="machine">
+          <div :class="['status', machineOn ? 'on' : 'off']">{{ machineOn ? 'ON' : 'OFF' }}</div>
+        </div>
+
+        <div class="component-card">
+          <div class="label">Temperature</div>
+          <img :src="thermoImg" class="tall" alt="thermometer">
+          <div :class="['status', tempLevel]">{{ tempLevel.toUpperCase() }}</div>
+        </div>
+
+        <div class="component-card">
+          <div class="label">Alert</div>
+          <img :src="alertImg" style="width:64px;height:64px" alt="alert light">
+        </div>
+
+        <div class="component-card">
+          <div class="label">Cooler</div>
+          <img :src="coolerImg" alt="cooler">
+          <div :class="['status', coolerOn ? 'on' : 'off']">{{ coolerOn ? 'ON' : 'OFF' }}</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Exercise editor ─────────────────────────────────────────── -->
+  <div class="ex-panel">
+    <div class="fn-wrap">
+      <div class="fn-sig">function setupCorrelations(machineOn, tempLevel, coolerOn) {
+  // machineOn, tempLevel, coolerOn  are Vue refs — read with .value, write with .value = ...</div>
+      <textarea id="code" spellcheck="false">  // 1. When machine turns on/off → start or reset temperature
+  watch(machineOn, on => {
+
+  })
+
+  // 2. When temperature changes → update coolerOn
+  watch(tempLevel, level => {
+
+  }, { immediate: true })</textarea>
+      <div class="fn-close">}</div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-run"   onclick="runCode()">▶ Run</button>
+      <button class="btn btn-reset" onclick="resetSim()">↺ Reset</button>
+      <span id="status"></span>
+    </div>
+
+    <details class="hints">
+      <summary>▸ AVAILABLE API (click to expand)</summary>
+      <div class="hints-body">
+        <h4>Reactive primitives (available as globals):</h4>
+        <span class="fn">watch</span>(ref, handler, options?)
+            — run handler whenever ref changes<br>
+        <span class="fn">watch</span>(ref, handler, { immediate: <span class="hl">true</span> })
+            — also run handler immediately on setup<br>
+        <br>
+        <h4>Reactive state passed as arguments:</h4>
+        <span class="hl">machineOn</span>  <span class="cm">ref&lt;boolean&gt;  — read: machineOn.value   write: machineOn.value = true/false</span><br>
+        <span class="hl">tempLevel</span>  <span class="cm">ref&lt;string&gt;   — 'low' | 'medium' | 'high'</span><br>
+        <span class="hl">coolerOn</span>   <span class="cm">ref&lt;boolean&gt;  — you must keep this in sync with tempLevel</span><br>
+        <br>
+        <h4>Helper functions:</h4>
+        <span class="fn">startTemperatureRise</span>()
+            — sets tempLevel to 'low' and starts 10-second timer<br>
+        <span class="fn">resetTemperature</span>()
+            — stops timer, resets tempLevel to 'low'<br>
+        <br>
+        <h4>Constants:</h4>
+        <span class="hl">THERMOS</span> = { low: <span class="str">'thermometer-a.svg'</span>, medium: <span class="str">'..b..'</span>, high: <span class="str">'..c..'</span> }<br>
+        <span class="hl">ALERTS</span>  = { low: <span class="str">'light-green.svg'</span>,  medium: <span class="str">'..yellow..'</span>, high: <span class="str">'..red..'</span> }
+      </div>
+    </details>
+  </div>
+
+  <script>
+  const { ref, computed, watch, watchEffect, effectScope } = Vue
+
+  // ─── Asset maps ──────────────────────────────────────────────────────────
+  const THERMOS = {
+    low:    '../../assets/thermometer-a.svg',
+    medium: '../../assets/thermometer-b.svg',
+    high:   '../../assets/thermometer-c.svg',
+  }
+  const ALERTS = {
+    low:    '../../assets/light-green.svg',
+    medium: '../../assets/light-yellow.svg',
+    high:   '../../assets/light-red.svg',
+  }
+
+  // ─── Reactive state ──────────────────────────────────────────────────────
+  const machineOn = ref(false)
+  const tempLevel = ref('low')
+  const coolerOn  = ref(false)
+
+  // ─── Template-facing computed (image sources) ────────────────────────────
+  const switchImg  = computed(() => machineOn.value ? '../../assets/switch-on.png'            : '../../assets/switch-off.png')
+  const machineImg = computed(() => machineOn.value ? '../../assets/di-pietro-engine.gif'     : '../../assets/di-pietro-engine.png')
+  const coolerImg  = computed(() => coolerOn.value  ? '../../assets/evaporative-cooling.gif'  : '../../assets/evaporative-cooling.png')
+  const thermoImg  = computed(() => THERMOS[tempLevel.value])
+  const alertImg   = computed(() => ALERTS[tempLevel.value])
+
+  // ─── Timer helper ─────────────────────────────────────────────────────────
+  let tempTimer = null
+  function startTemperatureRise() {
+    tempLevel.value = 'low'
+    tempTimer = setInterval(() => {
+      if      (tempLevel.value === 'low')    tempLevel.value = 'medium'
+      else if (tempLevel.value === 'medium') tempLevel.value = 'high'
+    }, 10000)
+  }
+  function resetTemperature() {
+    clearInterval(tempTimer)
+    tempLevel.value = 'low'
+  }
+
+  // ─── Vue app (owns the template, never torn down) ────────────────────────
+  Vue.createApp({
+    setup() {
+      return {
+        machineOn, tempLevel, coolerOn,
+        switchImg, machineImg, coolerImg, thermoImg, alertImg,
+        toggleMachine: () => { machineOn.value = !machineOn.value },
+      }
+    }
+  }).mount('#app')
+
+  // ─── Expose globals for student code ────────────────────────────────────
+  window.watch    = watch
+  window.computed = computed
+  window.machineOn = machineOn
+  window.tempLevel = tempLevel
+  window.coolerOn  = coolerOn
+  window.startTemperatureRise = startTemperatureRise
+  window.resetTemperature     = resetTemperature
+  window.THERMOS = THERMOS
+  window.ALERTS  = ALERTS
+
+  // ─── EffectScope tracks all reactive effects created by student code ──────
+  let scope = null
+
+  function resetSim() {
+    if (scope) scope.stop()   // stops all watchers the student created
+    scope = null
+    clearInterval(tempTimer)
+    machineOn.value = false
+    tempLevel.value = 'low'
+    coolerOn.value  = false
+    showStatus('')
+  }
+
+  function runCode() {
+    const body = document.getElementById('code').value
+    try {
+      resetSim()
+      scope = effectScope()
+      scope.run(() => {
+        // All watch() calls inside here are tracked by scope
+        const fn = new Function(
+          'machineOn', 'tempLevel', 'coolerOn',
+          'watch', 'computed',
+          'startTemperatureRise', 'resetTemperature',
+          'THERMOS', 'ALERTS',
+          body
+        )
+        fn(machineOn, tempLevel, coolerOn,
+           watch, computed,
+           startTemperatureRise, resetTemperature,
+           THERMOS, ALERTS)
+      })
+      showStatus('ok', '✓ Running — click the switch to test')
+    } catch (e) {
+      showStatus('err', '✗ ' + e.message)
+    }
+  }
+
+  function showStatus(cls, msg = '') {
+    const el = document.getElementById('status')
+    el.textContent = msg
+    el.className = cls
+  }
+
+  document.getElementById('code').addEventListener('keydown', e => {
+    if (e.key === 'Tab') {
+      e.preventDefault()
+      const t = e.target, s = t.selectionStart
+      t.value = t.value.slice(0, s) + '  ' + t.value.slice(t.selectionEnd)
+      t.selectionStart = t.selectionEnd = s + 2
+    }
+  })
+  </script>
+</body>
+</html>

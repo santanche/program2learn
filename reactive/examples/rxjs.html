@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>RxJS Lab Interativo</title>
+  <script src="https://unpkg.com/rxjs@7/dist/bundles/rxjs.umd.min.js"></script>
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    .cell { border: 1px solid #ccc; padding: 10px; margin-bottom: 20px; }
+    textarea { width: 100%; height: 120px; font-family: monospace; }
+    button { margin-top: 5px; }
+    .output { background: #111; color: #0f0; padding: 10px; min-height: 40px; }
+    h2 { margin-top: 40px; }
+  </style>
+</head>
+<body>
+
+<h1>🌊 RxJS Interactive Lab</h1>
+
+<script>
+const { fromEvent, interval } = rxjs;
+const { map, debounceTime } = rxjs.operators;
+
+function runCode(id) {
+  const code = document.getElementById(id).value;
+  const output = document.getElementById(id + "-out");
+  output.innerHTML = "";
+
+  const log = (msg) => {
+    output.innerHTML += msg + "<br>";
+  };
+
+  try {
+    eval(code);
+  } catch (e) {
+    log("Erro: " + e.message);
+  }
+}
+</script>
+
+<!-- EXEMPLO 1 -->
+
+<div class="cell">
+<h2>1. Stream de eventos (click)</h2>
+<button id="btn">Clique aqui</button>
+
+<textarea id="code1">
+const click$ = fromEvent(document.getElementById("btn"), "click");
+
+click$.subscribe(() => {
+  log("clicou!");
+});
+</textarea>
+
+<button onclick="runCode('code1')">Executar</button>
+
+<div class="output" id="code1-out"></div>
+</div>
+
+<!-- EXEMPLO 2 -->
+
+<div class="cell">
+<h2>2. Transformação com map</h2>
+
+<textarea id="code2">
+const click$ = fromEvent(document.getElementById("btn"), "click");
+
+const count$ = click$.pipe(
+  map((_, i) => i + 1)
+);
+
+count$.subscribe(v => log("contador: " + v));
+</textarea>
+
+<button onclick="runCode('code2')">Executar</button>
+
+<div class="output" id="code2-out"></div>
+</div>
+
+<!-- EXEMPLO 3 -->
+
+<div class="cell">
+<h2>3. Stream de tempo (interval)</h2>
+
+<textarea id="code3">
+const timer$ = interval(1000);
+
+timer$.subscribe(v => log("tempo: " + v));
+</textarea>
+
+<button onclick="runCode('code3')">Executar</button>
+
+<div class="output" id="code3-out"></div>
+</div>
+
+<!-- EXEMPLO 4 -->
+
+<div class="cell">
+<h2>4. Debounce (digitação)</h2>
+
+<input id="input" placeholder="Digite algo..." />
+
+<textarea id="code4">
+const input$ = fromEvent(document.getElementById("input"), "keyup");
+
+const busca$ = input$.pipe(
+  debounceTime(500),
+  map(e => e.target.value)
+);
+
+busca$.subscribe(v => log("busca: " + v));
+</textarea>
+
+<button onclick="runCode('code4')">Executar</button>
+
+<div class="output" id="code4-out"></div>
+</div>
+
+</body>
+</html>
