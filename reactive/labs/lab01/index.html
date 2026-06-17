@@ -6,42 +6,42 @@
   <title>SCADA Reactive Lab</title>
   <link rel="stylesheet" href="scada.css">
   <style>
-    .intro { max-width: 740px; margin: 32px auto; padding: 0 24px; line-height: 1.75; color: #90a4ae; font-size: 0.85rem; }
+    .intro { max-width: 740px; margin: 32px auto 0; padding: 0 24px; line-height: 1.75; color: #90a4ae; font-size: 0.85rem; }
     .intro h2 { color: #4fc3f7; margin-bottom: 10px; font-size: 1rem; letter-spacing: 1px; }
-    .intro ul { margin: 10px 0 0 20px; }
-    .intro li { margin-bottom: 6px; }
+    .intro ul  { margin: 10px 0 0 20px; }
+    .intro li  { margin-bottom: 6px; }
     .intro strong { color: #ffcb6b; }
 
-    .cards { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; padding: 32px 24px 48px; }
-    .card {
+    .sections { display: flex; gap: 32px; justify-content: center; flex-wrap: wrap; padding: 36px 24px 56px; }
+
+    .section-card {
       background: #16213e;
       border: 1px solid #0f3460;
-      border-radius: 10px;
-      padding: 28px 24px;
-      width: 240px;
-      text-align: center;
+      border-radius: 12px;
+      padding: 32px 28px;
+      width: 300px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
       text-decoration: none;
       color: inherit;
       transition: transform 0.2s, border-color 0.2s;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      align-items: center;
     }
-    .card:hover { transform: translateY(-5px); }
-    .card.htmx:hover { border-color: #4fc3f7; }
-    .card.vue:hover  { border-color: #a5d6a7; }
-    .card.rxjs:hover { border-color: #ce93d8; }
-    .card h2 { font-size: 1.1rem; color: #e0e0e0; }
-    .card p  { font-size: 0.75rem; color: #546e7a; line-height: 1.6; }
-    .card .paradigm { font-size: 0.65rem; color: #546e7a; }
+    .section-card.challenge:hover { border-color: #ffcb6b; transform: translateY(-4px); }
+    .section-card.solution:hover  { border-color: #4fc3f7; transform: translateY(-4px); }
+
+    .section-card h2 { font-size: 1.1rem; color: #e0e0e0; }
+    .section-card p  { font-size: 0.8rem; color: #546e7a; line-height: 1.6; }
+
     .section-label {
-      text-align: center;
       font-size: 0.65rem;
       letter-spacing: 3px;
       color: #546e7a;
-      margin: 32px 0 0;
+      text-transform: uppercase;
+      margin-bottom: 4px;
     }
+    .approaches { display: flex; gap: 6px; flex-wrap: wrap; }
+    .approaches span { font-size: 0.65rem; padding: 2px 8px; border-radius: 10px; }
   </style>
 </head>
 <body>
@@ -54,62 +54,43 @@
 
   <div class="intro">
     <h2>About this Lab</h2>
-    <p>This lab simulates a <strong>Supervisory Control and Data Acquisition (SCADA)</strong> industrial system with a machine, thermometer, cooler, and alert light. The same simulation is implemented three times — each version uses a different reactive programming paradigm.</p>
+    <p>This lab simulates a <strong>Supervisory Control and Data Acquisition (SCADA)</strong> industrial system — a machine, thermometer, cooler, and alert light. The same simulation is implemented three times, each with a different reactive programming paradigm:</p>
     <ul>
-      <li>A <strong>switch</strong> turns the machine on or off.</li>
-      <li>When the machine is on, temperature rises every 10 seconds: low → medium → high.</li>
-      <li>When temperature reaches <strong>high</strong>, the cooler activates automatically.</li>
-      <li>The alert light reflects the current temperature level.</li>
+      <li><strong>HTMX</strong> — event-based: components communicate through custom DOM events</li>
+      <li><strong>Vue</strong> — state-based: a reactive state drives all visual updates via computed properties and watchers</li>
+      <li><strong>RxJS</strong> — stream-based: all behaviors are observable streams composed with operators</li>
     </ul>
-    <p style="margin-top:14px;">In each version, find the <strong>setupCorrelations()</strong> function — it is the core of the reactive logic, and the only place where component relationships are defined.</p>
+    <p style="margin-top:14px">In every version, <strong>setupCorrelations()</strong> is the single function that defines how components relate to each other.</p>
   </div>
 
-  <p class="section-label">REFERENCE IMPLEMENTATIONS</p>
-  <div class="cards">
-    <a href="htmx.html" class="card htmx">
-      <span class="approach-badge htmx">EVENT-BASED</span>
-      <h2>HTMX</h2>
-      <p class="paradigm">Custom DOM Events</p>
-      <p>Components communicate by emitting and listening to named events. Changes propagate as discrete event dispatches through the document.</p>
+  <div class="sections">
+
+    <a href="challenge/index.html" class="section-card challenge">
+      <div>
+        <div class="section-label">✎ Exercise</div>
+        <h2>Challenge</h2>
+      </div>
+      <p>The simulation runs but nothing reacts. Write <strong>setupCorrelations()</strong> in the browser editor, click Run, and test your implementation by clicking the switch.</p>
+      <div class="approaches">
+        <span class="approach-badge htmx">HTMX</span>
+        <span class="approach-badge vue">VUE</span>
+        <span class="approach-badge rxjs">RXJS</span>
+      </div>
     </a>
 
-    <a href="vue.html" class="card vue">
-      <span class="approach-badge vue">STATE-BASED</span>
-      <h2>Vue</h2>
-      <p class="paradigm">Reactive State &amp; Computed</p>
-      <p>A shared reactive state drives all visual updates. Watchers and computed properties automatically keep everything in sync.</p>
+    <a href="solution/index.html" class="section-card solution">
+      <div>
+        <div class="section-label">◉ Reference</div>
+        <h2>Solution</h2>
+      </div>
+      <p>The simulation runs with <strong>setupCorrelations()</strong> fully implemented and displayed in a code panel. Study and compare how each paradigm expresses the same correlations.</p>
+      <div class="approaches">
+        <span class="approach-badge htmx">HTMX</span>
+        <span class="approach-badge vue">VUE</span>
+        <span class="approach-badge rxjs">RXJS</span>
+      </div>
     </a>
 
-    <a href="rxjs.html" class="card rxjs">
-      <span class="approach-badge rxjs">STREAM-BASED</span>
-      <h2>RxJS</h2>
-      <p class="paradigm">Observable Streams</p>
-      <p>All inputs and outputs are observable streams. Operators transform and combine them to produce derived behaviors.</p>
-    </a>
-  </div>
-
-  <p class="section-label">EXERCISES — implement setupCorrelations() yourself</p>
-  <div class="cards" style="padding-top:16px">
-    <a href="htmx-ex.html" class="card htmx" style="opacity:0.85">
-      <span class="approach-badge htmx">EVENT-BASED ✎</span>
-      <h2>HTMX Exercise</h2>
-      <p class="paradigm">Wire events in the browser</p>
-      <p>The simulation runs but nothing reacts. Fill in the event listeners to connect switch, machine, thermometer, cooler, and alert.</p>
-    </a>
-
-    <a href="vue-ex.html" class="card vue" style="opacity:0.85">
-      <span class="approach-badge vue">STATE-BASED ✎</span>
-      <h2>Vue Exercise</h2>
-      <p class="paradigm">Set up watchers in the browser</p>
-      <p>Reactive state exists but correlations are missing. Use watch() to keep the components in sync.</p>
-    </a>
-
-    <a href="rxjs-ex.html" class="card rxjs" style="opacity:0.85">
-      <span class="approach-badge rxjs">STREAM-BASED ✎</span>
-      <h2>RxJS Exercise</h2>
-      <p class="paradigm">Build the stream pipeline</p>
-      <p>Renderers and helpers are ready. Compose observable streams to connect switch → machine → temperature → cooler.</p>
-    </a>
   </div>
 </body>
 </html>

@@ -3,38 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SCADA — Vue Exercise</title>
-  <link rel="stylesheet" href="scada.css">
+  <title>SCADA — Vue Challenge</title>
+  <link rel="stylesheet" href="../scada.css">
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <style>
     .ex-panel { margin: 0 24px 24px; }
-    .fn-wrap {
-      background: #0d1117;
-      border: 1px solid #1e293b;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-    .fn-sig {
-      background: #1e293b;
-      padding: 8px 16px;
-      font: 0.75rem/1.5 'Courier New', monospace;
-      color: #82aaff;
-      white-space: pre;
-    }
+    .fn-wrap { background: #0d1117; border: 1px solid #1e293b; border-radius: 8px; overflow: hidden; }
+    .fn-sig { background: #1e293b; padding: 8px 16px; font: 0.75rem/1.5 'Courier New', monospace; color: #82aaff; white-space: pre; }
     textarea#code {
-      display: block;
-      width: 100%;
-      min-height: 200px;
-      background: #0d1117;
-      color: #c9d1d9;
+      display: block; width: 100%; min-height: 220px;
+      background: #0d1117; color: #c9d1d9;
       font: 0.75rem/1.65 'Courier New', monospace;
       border: none;
       border-top: 1px dashed #1e293b;
       border-bottom: 1px dashed #1e293b;
-      padding: 12px 16px;
-      resize: vertical;
-      outline: none;
-      tab-size: 2;
+      padding: 12px 16px; resize: vertical; outline: none; tab-size: 2;
     }
     .fn-close { background: #1e293b; padding: 8px 16px; font: 0.75rem/1.5 'Courier New', monospace; color: #82aaff; }
     .controls { display: flex; gap: 10px; align-items: center; padding: 12px 0 0; }
@@ -60,7 +43,7 @@
 <body>
   <header>
     <div>
-      <h1>SCADA SIMULATION — EXERCISE</h1>
+      <h1>SCADA SIMULATION — CHALLENGE</h1>
       <p>Implement <code style="color:#ffcb6b">setupCorrelations()</code> to wire the components together</p>
     </div>
     <span class="approach-badge vue">STATE-BASED · VUE</span>
@@ -68,12 +51,12 @@
 
   <nav class="nav">
     <a href="index.html">← Back</a>
-    <a href="htmx-ex.html">HTMX ✎</a>
-    <a href="vue.html">Solution</a>
-    <a href="rxjs-ex.html">RxJS ✎</a>
+    <a href="htmx.html">HTMX</a>
+    <a href="vue.html" class="vue">Vue</a>
+    <a href="rxjs.html">RxJS</a>
+    <a href="../solution/vue.html" style="margin-left:auto;color:#546e7a">View solution →</a>
   </nav>
 
-  <!-- ─── Simulation ──────────────────────────────────────────────── -->
   <div id="app">
     <div class="scada-panel">
       <div class="panel-title">INDUSTRIAL PLANT CONTROL PANEL</div>
@@ -112,20 +95,11 @@
     </div>
   </div>
 
-  <!-- ─── Exercise editor ─────────────────────────────────────────── -->
   <div class="ex-panel">
     <div class="fn-wrap">
       <div class="fn-sig">function setupCorrelations(machineOn, tempLevel, coolerOn) {
   // machineOn, tempLevel, coolerOn  are Vue refs — read with .value, write with .value = ...</div>
-      <textarea id="code" spellcheck="false">  // 1. When machine turns on/off → start or reset temperature
-  watch(machineOn, on => {
-
-  })
-
-  // 2. When temperature changes → update coolerOn
-  watch(tempLevel, level => {
-
-  }, { immediate: true })</textarea>
+      <textarea id="code" spellcheck="false"></textarea>
       <div class="fn-close">}</div>
     </div>
 
@@ -145,7 +119,7 @@
             — also run handler immediately on setup<br>
         <br>
         <h4>Reactive state passed as arguments:</h4>
-        <span class="hl">machineOn</span>  <span class="cm">ref&lt;boolean&gt;  — read: machineOn.value   write: machineOn.value = true/false</span><br>
+        <span class="hl">machineOn</span>  <span class="cm">ref&lt;boolean&gt;  — read/write: machineOn.value</span><br>
         <span class="hl">tempLevel</span>  <span class="cm">ref&lt;string&gt;   — 'low' | 'medium' | 'high'</span><br>
         <span class="hl">coolerOn</span>   <span class="cm">ref&lt;boolean&gt;  — you must keep this in sync with tempLevel</span><br>
         <br>
@@ -156,40 +130,36 @@
             — stops timer, resets tempLevel to 'low'<br>
         <br>
         <h4>Constants:</h4>
-        <span class="hl">THERMOS</span> = { low: <span class="str">'thermometer-a.svg'</span>, medium: <span class="str">'..b..'</span>, high: <span class="str">'..c..'</span> }<br>
-        <span class="hl">ALERTS</span>  = { low: <span class="str">'light-green.svg'</span>,  medium: <span class="str">'..yellow..'</span>, high: <span class="str">'..red..'</span> }
+        <span class="hl">THERMOS</span> = { low: <span class="str">'…thermometer-a.svg'</span>, medium: <span class="str">'…b…'</span>, high: <span class="str">'…c…'</span> }<br>
+        <span class="hl">ALERTS</span>  = { low: <span class="str">'…light-green.svg'</span>,  medium: <span class="str">'…yellow…'</span>, high: <span class="str">'…red…'</span> }
       </div>
     </details>
   </div>
 
   <script>
-  const { ref, computed, watch, watchEffect, effectScope } = Vue
+  const { ref, computed, watch, effectScope } = Vue
 
-  // ─── Asset maps ──────────────────────────────────────────────────────────
   const THERMOS = {
-    low:    '../../assets/thermometer-a.svg',
-    medium: '../../assets/thermometer-b.svg',
-    high:   '../../assets/thermometer-c.svg',
+    low:    '../../../assets/thermometer-a.svg',
+    medium: '../../../assets/thermometer-b.svg',
+    high:   '../../../assets/thermometer-c.svg',
   }
   const ALERTS = {
-    low:    '../../assets/light-green.svg',
-    medium: '../../assets/light-yellow.svg',
-    high:   '../../assets/light-red.svg',
+    low:    '../../../assets/light-green.svg',
+    medium: '../../../assets/light-yellow.svg',
+    high:   '../../../assets/light-red.svg',
   }
 
-  // ─── Reactive state ──────────────────────────────────────────────────────
   const machineOn = ref(false)
   const tempLevel = ref('low')
   const coolerOn  = ref(false)
 
-  // ─── Template-facing computed (image sources) ────────────────────────────
-  const switchImg  = computed(() => machineOn.value ? '../../assets/switch-on.png'            : '../../assets/switch-off.png')
-  const machineImg = computed(() => machineOn.value ? '../../assets/di-pietro-engine.gif'     : '../../assets/di-pietro-engine.png')
-  const coolerImg  = computed(() => coolerOn.value  ? '../../assets/evaporative-cooling.gif'  : '../../assets/evaporative-cooling.png')
+  const switchImg  = computed(() => machineOn.value ? '../../../assets/switch-on.png'           : '../../../assets/switch-off.png')
+  const machineImg = computed(() => machineOn.value ? '../../../assets/di-pietro-engine.gif'    : '../../../assets/di-pietro-engine.png')
+  const coolerImg  = computed(() => coolerOn.value  ? '../../../assets/evaporative-cooling.gif' : '../../../assets/evaporative-cooling.png')
   const thermoImg  = computed(() => THERMOS[tempLevel.value])
   const alertImg   = computed(() => ALERTS[tempLevel.value])
 
-  // ─── Timer helper ─────────────────────────────────────────────────────────
   let tempTimer = null
   function startTemperatureRise() {
     tempLevel.value = 'low'
@@ -203,7 +173,6 @@
     tempLevel.value = 'low'
   }
 
-  // ─── Vue app (owns the template, never torn down) ────────────────────────
   Vue.createApp({
     setup() {
       return {
@@ -214,7 +183,6 @@
     }
   }).mount('#app')
 
-  // ─── Expose globals for student code ────────────────────────────────────
   window.watch    = watch
   window.computed = computed
   window.machineOn = machineOn
@@ -225,11 +193,10 @@
   window.THERMOS = THERMOS
   window.ALERTS  = ALERTS
 
-  // ─── EffectScope tracks all reactive effects created by student code ──────
   let scope = null
 
   function resetSim() {
-    if (scope) scope.stop()   // stops all watchers the student created
+    if (scope) scope.stop()
     scope = null
     clearInterval(tempTimer)
     machineOn.value = false
@@ -244,7 +211,6 @@
       resetSim()
       scope = effectScope()
       scope.run(() => {
-        // All watch() calls inside here are tracked by scope
         const fn = new Function(
           'machineOn', 'tempLevel', 'coolerOn',
           'watch', 'computed',
@@ -265,17 +231,15 @@
 
   function showStatus(cls, msg = '') {
     const el = document.getElementById('status')
-    el.textContent = msg
-    el.className = cls
+    el.textContent = msg; el.className = cls
   }
 
   document.getElementById('code').addEventListener('keydown', e => {
-    if (e.key === 'Tab') {
-      e.preventDefault()
-      const t = e.target, s = t.selectionStart
-      t.value = t.value.slice(0, s) + '  ' + t.value.slice(t.selectionEnd)
-      t.selectionStart = t.selectionEnd = s + 2
-    }
+    if (e.key !== 'Tab') return
+    e.preventDefault()
+    const t = e.target, s = t.selectionStart
+    t.value = t.value.slice(0, s) + '  ' + t.value.slice(t.selectionEnd)
+    t.selectionStart = t.selectionEnd = s + 2
   })
   </script>
 </body>

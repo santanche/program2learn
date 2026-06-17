@@ -3,27 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SCADA — RxJS Exercise</title>
-  <link rel="stylesheet" href="scada.css">
+  <title>SCADA — RxJS Challenge</title>
+  <link rel="stylesheet" href="../scada.css">
   <script src="https://unpkg.com/rxjs@7/dist/bundles/rxjs.umd.min.js"></script>
   <style>
     .ex-panel { margin: 0 24px 24px; }
     .fn-wrap { background: #0d1117; border: 1px solid #1e293b; border-radius: 8px; overflow: hidden; }
     .fn-sig { background: #1e293b; padding: 8px 16px; font: 0.75rem/1.5 'Courier New', monospace; color: #82aaff; white-space: pre; }
     textarea#code {
-      display: block;
-      width: 100%;
-      min-height: 240px;
-      background: #0d1117;
-      color: #c9d1d9;
+      display: block; width: 100%; min-height: 220px;
+      background: #0d1117; color: #c9d1d9;
       font: 0.75rem/1.65 'Courier New', monospace;
       border: none;
       border-top: 1px dashed #1e293b;
       border-bottom: 1px dashed #1e293b;
-      padding: 12px 16px;
-      resize: vertical;
-      outline: none;
-      tab-size: 2;
+      padding: 12px 16px; resize: vertical; outline: none; tab-size: 2;
     }
     .fn-close { background: #1e293b; padding: 8px 16px; font: 0.75rem/1.5 'Courier New', monospace; color: #82aaff; }
     .controls { display: flex; gap: 10px; align-items: center; padding: 12px 0 0; }
@@ -49,7 +43,7 @@
 <body>
   <header>
     <div>
-      <h1>SCADA SIMULATION — EXERCISE</h1>
+      <h1>SCADA SIMULATION — CHALLENGE</h1>
       <p>Implement <code style="color:#ffcb6b">setupCorrelations()</code> to wire the components together</p>
     </div>
     <span class="approach-badge rxjs">STREAM-BASED · RXJS</span>
@@ -57,85 +51,54 @@
 
   <nav class="nav">
     <a href="index.html">← Back</a>
-    <a href="htmx-ex.html">HTMX ✎</a>
-    <a href="vue-ex.html">Vue ✎</a>
-    <a href="rxjs.html">Solution</a>
+    <a href="htmx.html">HTMX</a>
+    <a href="vue.html">Vue</a>
+    <a href="rxjs.html" class="rxjs">RxJS</a>
+    <a href="../solution/rxjs.html" style="margin-left:auto;color:#546e7a">View solution →</a>
   </nav>
 
-  <!-- ─── Simulation ──────────────────────────────────────────────── -->
   <div class="scada-panel">
     <div class="panel-title">INDUSTRIAL PLANT CONTROL PANEL</div>
     <div class="components-grid">
 
       <div class="component-card switch-card">
         <div class="label">Switch</div>
-        <img id="switch-img" src="../../assets/switch-off.png" alt="switch">
+        <img id="switch-img" src="../../../assets/switch-off.png" alt="switch">
         <div id="switch-status" class="status off">OFF</div>
       </div>
 
       <div class="component-card">
         <div class="label">Machine</div>
-        <img id="machine-img" src="../../assets/di-pietro-engine.png" alt="machine">
+        <img id="machine-img" src="../../../assets/di-pietro-engine.png" alt="machine">
         <div id="machine-status" class="status off">OFF</div>
       </div>
 
       <div class="component-card">
         <div class="label">Temperature</div>
-        <img id="thermo-img" src="../../assets/thermometer-a.svg" class="tall" alt="thermometer">
+        <img id="thermo-img" src="../../../assets/thermometer-a.svg" class="tall" alt="thermometer">
         <div id="thermo-status" class="status low">LOW</div>
       </div>
 
       <div class="component-card">
         <div class="label">Alert</div>
-        <img id="alert-img" src="../../assets/light-green.svg" style="width:64px;height:64px" alt="alert light">
+        <img id="alert-img" src="../../../assets/light-green.svg" style="width:64px;height:64px" alt="alert light">
       </div>
 
       <div class="component-card">
         <div class="label">Cooler</div>
-        <img id="cooler-img" src="../../assets/evaporative-cooling.png" alt="cooler">
+        <img id="cooler-img" src="../../../assets/evaporative-cooling.png" alt="cooler">
         <div id="cooler-status" class="status off">OFF</div>
       </div>
 
     </div>
   </div>
 
-  <!-- ─── Exercise editor ─────────────────────────────────────────── -->
   <div class="ex-panel">
     <div class="fn-wrap">
       <div class="fn-sig">function setupCorrelations(switchEl) {
   // switchEl — the switch &lt;img&gt; element; attach click events to it
   // Use sub(observable$, handler) instead of .subscribe() — it tracks subscriptions for cleanup</div>
-      <textarea id="code" spellcheck="false">  const { fromEvent, timer, of } = rxjs
-  const { scan, switchMap, map, take, share } = rxjs
-
-  // 1. Click stream → machine-on boolean (toggles each click)
-  const machineOn$ = fromEvent(switchEl, 'click').pipe(
-    // scan(accumulator, seed) keeps running state
-    // tip: scan(on => !on, false) flips a boolean each emission
-
-  )
-
-  // 2. Machine-on stream → temperature level stream
-  //    When on:  timer(0, 10000) emits 0, 1, 2 → map to LEVELS
-  //    When off: of('low') resets immediately
-  const temperature$ = machineOn$.pipe(
-    switchMap(on => on
-      ? timer(0, 10000).pipe(take(3), map(t => LEVELS[t]))
-      : of('low')
-    ),
-
-  )
-
-  // 3. Derived stream: cooler is on when temperature is 'high'
-  const coolerOn$ = temperature$.pipe(
-
-  )
-
-  // 4. Subscribe each stream to its renderer
-  sub(machineOn$,   on => { renderMachine(on); renderSwitch(on) })
-  sub(temperature$, t  =>   renderTemperature(t))
-  sub(coolerOn$,    on =>   renderCooler(on))
-  sub(temperature$, t  =>   renderAlert(t))</textarea>
+      <textarea id="code" spellcheck="false"></textarea>
       <div class="fn-close">}</div>
     </div>
 
@@ -149,30 +112,30 @@
       <summary>▸ AVAILABLE API (click to expand)</summary>
       <div class="hints-body">
         <h4>RxJS creation operators:</h4>
-        <span class="fn">fromEvent</span>(element, <span class="str">'click'</span>)    — stream of click events<br>
-        <span class="fn">timer</span>(delay, period)           — emits 0, 1, 2, … starting after delay, then every period ms<br>
-        <span class="fn">of</span>(...values)                  — finite stream of fixed values, then completes<br>
+        <span class="fn">fromEvent</span>(element, <span class="str">'click'</span>)      — stream of click events<br>
+        <span class="fn">timer</span>(delay, period)             — emits 0, 1, 2, … after delay then every period ms<br>
+        <span class="fn">of</span>(...values)                    — finite stream of fixed values<br>
         <br>
         <h4>Pipeable operators (use inside .pipe(...)):</h4>
-        <span class="fn">scan</span>((acc, val) => newAcc, seed)  — accumulate state across emissions<br>
-        <span class="fn">switchMap</span>(val => observable$)     — switch to a new inner stream (cancels previous)<br>
-        <span class="fn">map</span>(val => transformed)           — transform each value<br>
-        <span class="fn">take</span>(n)                           — complete after n emissions<br>
-        <span class="fn">share</span>()                           — multicast so multiple subscribers share one execution<br>
+        <span class="fn">scan</span>((acc, val) => newAcc, seed) — accumulate state across emissions<br>
+        <span class="fn">switchMap</span>(val => observable$)    — switch to new inner stream (cancels previous)<br>
+        <span class="fn">map</span>(val => transformed)          — transform each value<br>
+        <span class="fn">take</span>(n)                          — complete after n emissions<br>
+        <span class="fn">share</span>()                          — multicast so multiple subscribers share one execution<br>
         <br>
         <h4>Subscription (use instead of .subscribe()):</h4>
-        <span class="fn">sub</span>(observable$, handler)        — tracked subscribe; all are cancelled on Reset<br>
+        <span class="fn">sub</span>(observable$, handler)       — tracked subscribe; all are cancelled on Reset<br>
         <br>
         <h4>Renderer functions:</h4>
         <span class="fn">renderSwitch</span>(on: boolean)<br>
         <span class="fn">renderMachine</span>(on: boolean)<br>
-        <span class="fn">renderTemperature</span>(level: string)  <span class="cm">— 'low' | 'medium' | 'high'</span><br>
+        <span class="fn">renderTemperature</span>(level: string) <span class="cm">— 'low' | 'medium' | 'high'</span><br>
         <span class="fn">renderCooler</span>(on: boolean)<br>
         <span class="fn">renderAlert</span>(level: string)<br>
         <br>
         <h4>Constants:</h4>
         <span class="hl">LEVELS</span> = [<span class="str">'low'</span>, <span class="str">'medium'</span>, <span class="str">'high'</span>]
-            <span class="cm">— LEVELS[0]='low', LEVELS[1]='medium', LEVELS[2]='high'</span>
+            <span class="cm">— index 0=low, 1=medium, 2=high</span>
       </div>
     </details>
   </div>
@@ -182,64 +145,55 @@
 
   const LEVELS  = ['low', 'medium', 'high']
   const THERMOS = {
-    low:    '../../assets/thermometer-a.svg',
-    medium: '../../assets/thermometer-b.svg',
-    high:   '../../assets/thermometer-c.svg',
+    low:    '../../../assets/thermometer-a.svg',
+    medium: '../../../assets/thermometer-b.svg',
+    high:   '../../../assets/thermometer-c.svg',
   }
   const LIGHTS = {
-    low:    '../../assets/light-green.svg',
-    medium: '../../assets/light-yellow.svg',
-    high:   '../../assets/light-red.svg',
+    low:    '../../../assets/light-green.svg',
+    medium: '../../../assets/light-yellow.svg',
+    high:   '../../../assets/light-red.svg',
   }
 
-  // ─── Renderers ───────────────────────────────────────────────────────────
   function renderSwitch(on) {
     document.getElementById('switch-img').src =
-      on ? '../../assets/switch-on.png' : '../../assets/switch-off.png'
+      on ? '../../../assets/switch-on.png' : '../../../assets/switch-off.png'
     const s = document.getElementById('switch-status')
-    s.textContent = on ? 'ON' : 'OFF'
-    s.className = 'status ' + (on ? 'on' : 'off')
+    s.textContent = on ? 'ON' : 'OFF'; s.className = 'status ' + (on ? 'on' : 'off')
   }
   function renderMachine(on) {
     document.getElementById('machine-img').src =
-      on ? '../../assets/di-pietro-engine.gif' : '../../assets/di-pietro-engine.png'
+      on ? '../../../assets/di-pietro-engine.gif' : '../../../assets/di-pietro-engine.png'
     const s = document.getElementById('machine-status')
-    s.textContent = on ? 'ON' : 'OFF'
-    s.className = 'status ' + (on ? 'on' : 'off')
+    s.textContent = on ? 'ON' : 'OFF'; s.className = 'status ' + (on ? 'on' : 'off')
   }
   function renderTemperature(level) {
     document.getElementById('thermo-img').src = THERMOS[level]
     const s = document.getElementById('thermo-status')
-    s.textContent = level.toUpperCase()
-    s.className = 'status ' + level
+    s.textContent = level.toUpperCase(); s.className = 'status ' + level
   }
   function renderCooler(on) {
     document.getElementById('cooler-img').src =
-      on ? '../../assets/evaporative-cooling.gif' : '../../assets/evaporative-cooling.png'
+      on ? '../../../assets/evaporative-cooling.gif' : '../../../assets/evaporative-cooling.png'
     const s = document.getElementById('cooler-status')
-    s.textContent = on ? 'ON' : 'OFF'
-    s.className = 'status ' + (on ? 'on' : 'off')
+    s.textContent = on ? 'ON' : 'OFF'; s.className = 'status ' + (on ? 'on' : 'off')
   }
   function renderAlert(level) {
     document.getElementById('alert-img').src = LIGHTS[level]
   }
 
-  // ─── Subscription tracker — cancelled on each Reset ──────────────────────
-  // Students use sub() instead of .subscribe(); all subscriptions are tracked.
+  // sub() wraps .subscribe() and tracks subscriptions for cleanup
   let masterSub = new Subscription()
-  function sub(obs$, handler) {
-    masterSub.add(obs$.subscribe(handler))
-  }
+  function sub(obs$, handler) { masterSub.add(obs$.subscribe(handler)) }
 
-  // ─── The switch element is replaced on each Run to clear fromEvent bindings
+  // The switch element is cloned on each Run to clear all fromEvent bindings
   function getFreshSwitch() {
     const old = document.getElementById('switch-img')
-    const fresh = old.cloneNode(true)   // clone without event listeners
+    const fresh = old.cloneNode(true)
     old.parentNode.replaceChild(fresh, old)
     return fresh
   }
 
-  // ─── Reset ───────────────────────────────────────────────────────────────
   function resetSim() {
     masterSub.unsubscribe()
     masterSub = new Subscription()
@@ -248,13 +202,11 @@
     showStatus('')
   }
 
-  // ─── Run student code ────────────────────────────────────────────────────
   function runCode() {
     const body = document.getElementById('code').value
     try {
       resetSim()
       const switchEl = getFreshSwitch()
-
       const fn = new Function(
         'switchEl', 'rxjs', 'sub',
         'renderSwitch', 'renderMachine', 'renderTemperature', 'renderCooler', 'renderAlert',
@@ -272,17 +224,15 @@
 
   function showStatus(cls, msg = '') {
     const el = document.getElementById('status')
-    el.textContent = msg
-    el.className = cls
+    el.textContent = msg; el.className = cls
   }
 
   document.getElementById('code').addEventListener('keydown', e => {
-    if (e.key === 'Tab') {
-      e.preventDefault()
-      const t = e.target, s = t.selectionStart
-      t.value = t.value.slice(0, s) + '  ' + t.value.slice(t.selectionEnd)
-      t.selectionStart = t.selectionEnd = s + 2
-    }
+    if (e.key !== 'Tab') return
+    e.preventDefault()
+    const t = e.target, s = t.selectionStart
+    t.value = t.value.slice(0, s) + '  ' + t.value.slice(t.selectionEnd)
+    t.selectionStart = t.selectionEnd = s + 2
   })
   </script>
 </body>

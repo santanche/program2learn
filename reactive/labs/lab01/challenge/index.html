@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCADA — Challenges</title>
+  <link rel="stylesheet" href="../scada.css">
+  <style>
+    .intro { max-width: 680px; margin: 28px auto 0; padding: 0 24px; line-height: 1.75; color: #90a4ae; font-size: 0.85rem; }
+    .intro h2 { color: #4fc3f7; margin-bottom: 8px; font-size: 0.95rem; letter-spacing: 1px; }
+    .intro ul { margin: 8px 0 0 20px; }
+    .intro li { margin-bottom: 5px; }
+    .intro strong { color: #ffcb6b; }
+    .cards { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; padding: 28px 24px 48px; }
+    .card {
+      background: #16213e; border: 1px solid #0f3460; border-radius: 10px;
+      padding: 28px 24px; width: 230px; text-align: center;
+      text-decoration: none; color: inherit;
+      transition: transform 0.2s, border-color 0.2s;
+      display: flex; flex-direction: column; gap: 10px; align-items: center;
+    }
+    .card:hover { transform: translateY(-4px); }
+    .card.htmx:hover { border-color: #4fc3f7; }
+    .card.vue:hover  { border-color: #a5d6a7; }
+    .card.rxjs:hover { border-color: #ce93d8; }
+    .card h2 { font-size: 1rem; color: #e0e0e0; }
+    .card p  { font-size: 0.75rem; color: #546e7a; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>SCADA CHALLENGES</h1>
+      <p>Implement <code style="color:#ffcb6b">setupCorrelations()</code> — then run and test in the browser</p>
+    </div>
+  </header>
+
+  <nav class="nav">
+    <a href="../index.html">← Back to lab</a>
+    <a href="../solution/index.html" style="margin-left:auto;color:#546e7a">Solutions →</a>
+  </nav>
+
+  <div class="intro">
+    <h2>Your task</h2>
+    <p>Each page shows a live SCADA simulation. The visual components are ready, but nothing reacts yet — <strong>setupCorrelations()</strong> is the missing wiring.</p>
+    <ul>
+      <li>Write your implementation in the editor box.</li>
+      <li>Click <strong>▶ Run</strong> to execute it — then click the switch to test.</li>
+      <li>Click <strong>↺ Reset</strong> to restore the initial state and try again.</li>
+      <li>Expand <strong>▸ AVAILABLE API</strong> to see what functions and constants are in scope.</li>
+    </ul>
+  </div>
+
+  <div class="cards">
+    <a href="htmx.html" class="card htmx">
+      <span class="approach-badge htmx">EVENT-BASED</span>
+      <h2>HTMX</h2>
+      <p>Wire components using custom DOM events — <code>on()</code> and <code>emit()</code>.</p>
+    </a>
+
+    <a href="vue.html" class="card vue">
+      <span class="approach-badge vue">STATE-BASED</span>
+      <h2>Vue</h2>
+      <p>Set up <code>watch()</code> to keep reactive state in sync across components.</p>
+    </a>
+
+    <a href="rxjs.html" class="card rxjs">
+      <span class="approach-badge rxjs">STREAM-BASED</span>
+      <h2>RxJS</h2>
+      <p>Compose observable streams with operators to propagate changes end-to-end.</p>
+    </a>
+  </div>
+</body>
+</html>

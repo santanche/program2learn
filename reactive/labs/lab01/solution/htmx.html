@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SCADA — HTMX (Event-Based)</title>
-  <link rel="stylesheet" href="scada.css">
+  <title>SCADA — HTMX Solution</title>
+  <link rel="stylesheet" href="../scada.css">
   <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
 </head>
 <body>
@@ -21,17 +21,17 @@
     <a href="htmx.html" class="htmx">HTMX</a>
     <a href="vue.html">Vue</a>
     <a href="rxjs.html">RxJS</a>
+    <a href="../challenge/htmx.html" style="margin-left:auto;color:#546e7a">Try challenge →</a>
   </nav>
 
   <div class="scada-panel">
     <div class="panel-title">INDUSTRIAL PLANT CONTROL PANEL</div>
-
     <div class="components-grid">
 
       <div class="component-card switch-card">
         <div class="label">Switch</div>
         <img id="switch-img"
-             src="../../assets/switch-off.png"
+             src="../../../assets/switch-off.png"
              hx-on:click="htmx.trigger(document.body, 'switch:clicked')"
              alt="switch">
         <div id="switch-status" class="status off">OFF</div>
@@ -39,31 +39,30 @@
 
       <div class="component-card">
         <div class="label">Machine</div>
-        <img id="machine-img" src="../../assets/di-pietro-engine.png" alt="machine">
+        <img id="machine-img" src="../../../assets/di-pietro-engine.png" alt="machine">
         <div id="machine-status" class="status off">OFF</div>
       </div>
 
       <div class="component-card">
         <div class="label">Temperature</div>
-        <img id="thermo-img" src="../../assets/thermometer-a.svg" class="tall" alt="thermometer">
+        <img id="thermo-img" src="../../../assets/thermometer-a.svg" class="tall" alt="thermometer">
         <div id="thermo-status" class="status low">LOW</div>
       </div>
 
       <div class="component-card">
         <div class="label">Alert</div>
-        <img id="alert-img" src="../../assets/light-green.svg" style="width:64px;height:64px" alt="alert light">
+        <img id="alert-img" src="../../../assets/light-green.svg" style="width:64px;height:64px" alt="alert light">
       </div>
 
       <div class="component-card">
         <div class="label">Cooler</div>
-        <img id="cooler-img" src="../../assets/evaporative-cooling.png" alt="cooler">
+        <img id="cooler-img" src="../../../assets/evaporative-cooling.png" alt="cooler">
         <div id="cooler-status" class="status off">OFF</div>
       </div>
 
     </div>
   </div>
 
-  <!-- ─── Key section for students ─────────────────────────────────── -->
   <div class="code-section">
     <h3>setupCorrelations() — EVENT-BASED WIRING (HTMX)</h3>
     <pre><span class="cm">// Each component communicates through named custom events.
@@ -91,100 +90,77 @@
   </div>
 
   <script>
-  // ─── Helpers ─────────────────────────────────────────────────────────────
   const on   = (name, fn) => document.body.addEventListener(name, fn)
   const emit = (name, detail) => htmx.trigger(document.body, name, detail)
 
-  // ─── State ───────────────────────────────────────────────────────────────
-  let machineOn   = false
-  let tempLevel   = 0   // 0=low 1=medium 2=high
-  let tempTimer   = null
+  let machineOn = false
+  let tempLevel = 0
+  let tempTimer = null
 
-  const LEVELS    = ['low', 'medium', 'high']
-  const THERMOS   = ['../../assets/thermometer-a.svg',
-                     '../../assets/thermometer-b.svg',
-                     '../../assets/thermometer-c.svg']
-  const ALERTS    = ['../../assets/light-green.svg',
-                     '../../assets/light-yellow.svg',
-                     '../../assets/light-red.svg']
+  const LEVELS  = ['low', 'medium', 'high']
+  const THERMOS = ['../../../assets/thermometer-a.svg',
+                   '../../../assets/thermometer-b.svg',
+                   '../../../assets/thermometer-c.svg']
+  const ALERTS  = ['../../../assets/light-green.svg',
+                   '../../../assets/light-yellow.svg',
+                   '../../../assets/light-red.svg']
 
-  // ─── Renderers (pure DOM updates) ────────────────────────────────────────
   function renderSwitch(on) {
     document.getElementById('switch-img').src =
-      on ? '../../assets/switch-on.png' : '../../assets/switch-off.png'
+      on ? '../../../assets/switch-on.png' : '../../../assets/switch-off.png'
     const s = document.getElementById('switch-status')
-    s.textContent = on ? 'ON' : 'OFF'
-    s.className = 'status ' + (on ? 'on' : 'off')
+    s.textContent = on ? 'ON' : 'OFF'; s.className = 'status ' + (on ? 'on' : 'off')
   }
-
   function renderMachine(on) {
     document.getElementById('machine-img').src =
-      on ? '../../assets/di-pietro-engine.gif' : '../../assets/di-pietro-engine.png'
+      on ? '../../../assets/di-pietro-engine.gif' : '../../../assets/di-pietro-engine.png'
     const s = document.getElementById('machine-status')
-    s.textContent = on ? 'ON' : 'OFF'
-    s.className = 'status ' + (on ? 'on' : 'off')
+    s.textContent = on ? 'ON' : 'OFF'; s.className = 'status ' + (on ? 'on' : 'off')
   }
-
   function renderTemperature(level) {
     const idx = LEVELS.indexOf(level)
     document.getElementById('thermo-img').src = THERMOS[idx]
     const s = document.getElementById('thermo-status')
-    s.textContent = level.toUpperCase()
-    s.className = 'status ' + level
+    s.textContent = level.toUpperCase(); s.className = 'status ' + level
   }
-
   function renderCooler(on) {
     document.getElementById('cooler-img').src =
-      on ? '../../assets/evaporative-cooling.gif' : '../../assets/evaporative-cooling.png'
+      on ? '../../../assets/evaporative-cooling.gif' : '../../../assets/evaporative-cooling.png'
     const s = document.getElementById('cooler-status')
-    s.textContent = on ? 'ON' : 'OFF'
-    s.className = 'status ' + (on ? 'on' : 'off')
+    s.textContent = on ? 'ON' : 'OFF'; s.className = 'status ' + (on ? 'on' : 'off')
   }
-
   function renderAlert(level) {
-    const idx = LEVELS.indexOf(level)
-    document.getElementById('alert-img').src = ALERTS[idx]
+    document.getElementById('alert-img').src = ALERTS[LEVELS.indexOf(level)]
   }
 
-  // ─── Temperature helpers ─────────────────────────────────────────────────
   function startTemperatureRise() {
     tempLevel = 0
     emit('temperature:changed', { level: LEVELS[tempLevel] })
     tempTimer = setInterval(() => {
-      if (tempLevel < 2) {
-        tempLevel++
-        emit('temperature:changed', { level: LEVELS[tempLevel] })
-      }
+      if (tempLevel < 2) { tempLevel++; emit('temperature:changed', { level: LEVELS[tempLevel] }) }
     }, 10000)
   }
-
   function resetTemperature() {
-    clearInterval(tempTimer)
-    tempLevel = 0
+    clearInterval(tempTimer); tempLevel = 0
     emit('temperature:changed', { level: LEVELS[tempLevel] })
   }
 
-  // ─── Event-based renderers (react to events) ─────────────────────────────
   on('machine:changed',     ({ detail }) => { renderSwitch(detail.on); renderMachine(detail.on) })
   on('temperature:changed', ({ detail }) => renderTemperature(detail.level))
   on('cooler:changed',      ({ detail }) => renderCooler(detail.on))
   on('alert:changed',       ({ detail }) => renderAlert(detail.level))
 
-  // ─── THE KEY FUNCTION: defines all component correlations ─────────────────
   function setupCorrelations() {
 
-    // 1. Switch click → toggle machine state
     on('switch:clicked', () => {
       machineOn = !machineOn
       emit('machine:changed', { on: machineOn })
     })
 
-    // 2. Machine change → start/stop temperature rise
     on('machine:changed', ({ detail }) => {
       detail.on ? startTemperatureRise() : resetTemperature()
     })
 
-    // 3. Temperature change → cooler and alert light react
     on('temperature:changed', ({ detail }) => {
       emit('cooler:changed',  { on: detail.level === 'high' })
       emit('alert:changed',   { level: detail.level })

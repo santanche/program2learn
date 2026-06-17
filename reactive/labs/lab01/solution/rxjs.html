@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SCADA — RxJS (Stream-Based)</title>
-  <link rel="stylesheet" href="scada.css">
+  <title>SCADA — RxJS Solution</title>
+  <link rel="stylesheet" href="../scada.css">
   <script src="https://unpkg.com/rxjs@7/dist/bundles/rxjs.umd.min.js"></script>
 </head>
 <body>
@@ -21,46 +21,45 @@
     <a href="htmx.html">HTMX</a>
     <a href="vue.html">Vue</a>
     <a href="rxjs.html" class="rxjs">RxJS</a>
+    <a href="../challenge/rxjs.html" style="margin-left:auto;color:#546e7a">Try challenge →</a>
   </nav>
 
   <div class="scada-panel">
     <div class="panel-title">INDUSTRIAL PLANT CONTROL PANEL</div>
-
     <div class="components-grid">
 
       <div class="component-card switch-card">
         <div class="label">Switch</div>
-        <img id="switch-img" src="../../assets/switch-off.png" alt="switch">
+        <img id="switch-img" src="../../../assets/switch-off.png" alt="switch">
         <div id="switch-status" class="status off">OFF</div>
       </div>
 
       <div class="component-card">
         <div class="label">Machine</div>
-        <img id="machine-img" src="../../assets/di-pietro-engine.png" alt="machine">
+        <img id="machine-img" src="../../../assets/di-pietro-engine.png" alt="machine">
         <div id="machine-status" class="status off">OFF</div>
       </div>
 
       <div class="component-card">
         <div class="label">Temperature</div>
-        <img id="thermo-img" src="../../assets/thermometer-a.svg" class="tall" alt="thermometer">
+        <img id="thermo-img" src="../../../assets/thermometer-a.svg" class="tall" alt="thermometer">
         <div id="thermo-status" class="status low">LOW</div>
       </div>
 
       <div class="component-card">
         <div class="label">Alert</div>
-        <img id="alert-img" src="../../assets/light-green.svg" style="width:64px;height:64px" alt="alert light">
+        <img id="alert-img" src="../../../assets/light-green.svg" style="width:64px;height:64px" alt="alert light">
       </div>
 
       <div class="component-card">
         <div class="label">Cooler</div>
-        <img id="cooler-img" src="../../assets/evaporative-cooling.png" alt="cooler">
+        <img id="cooler-img" src="../../../assets/evaporative-cooling.png" alt="cooler">
         <div id="cooler-status" class="status off">OFF</div>
       </div>
 
     </div>
   </div>
 
-  <!-- ─── Key section for students ─────────────────────────────────── -->
   <div class="code-section">
     <h3>setupCorrelations() — STREAM-BASED WIRING (RXJS)</h3>
     <pre><span class="cm">// Every behavior is a stream. Operators transform and combine streams.
@@ -86,7 +85,7 @@
     <span class="fn">share</span>()
   )
 
-  <span class="cm">// 3. Derived streams: cooler on when temperature is high</span>
+  <span class="cm">// 3. Derived stream: cooler on when temperature is high</span>
   <span class="kw">const</span> coolerOn$ = temperature$.<span class="fn">pipe</span>(<span class="fn">map</span>(t => t === <span class="str">'high'</span>))
 
   <span class="cm">// 4. Subscribe: connect each stream to its renderer</span>
@@ -101,65 +100,50 @@
   const { fromEvent, timer, of } = rxjs
   const { scan, switchMap, map, take, share } = rxjs
 
-  const LEVELS = ['low', 'medium', 'high']
+  const LEVELS  = ['low', 'medium', 'high']
   const THERMOS = {
-    low:    '../../assets/thermometer-a.svg',
-    medium: '../../assets/thermometer-b.svg',
-    high:   '../../assets/thermometer-c.svg',
+    low:    '../../../assets/thermometer-a.svg',
+    medium: '../../../assets/thermometer-b.svg',
+    high:   '../../../assets/thermometer-c.svg',
   }
   const ALERTS = {
-    low:    '../../assets/light-green.svg',
-    medium: '../../assets/light-yellow.svg',
-    high:   '../../assets/light-red.svg',
+    low:    '../../../assets/light-green.svg',
+    medium: '../../../assets/light-yellow.svg',
+    high:   '../../../assets/light-red.svg',
   }
 
-  // ─── Renderers (pure DOM updates) ────────────────────────────────────────
   function renderSwitch(on) {
     document.getElementById('switch-img').src =
-      on ? '../../assets/switch-on.png' : '../../assets/switch-off.png'
+      on ? '../../../assets/switch-on.png' : '../../../assets/switch-off.png'
     const s = document.getElementById('switch-status')
-    s.textContent = on ? 'ON' : 'OFF'
-    s.className = 'status ' + (on ? 'on' : 'off')
+    s.textContent = on ? 'ON' : 'OFF'; s.className = 'status ' + (on ? 'on' : 'off')
   }
-
   function renderMachine(on) {
     document.getElementById('machine-img').src =
-      on ? '../../assets/di-pietro-engine.gif' : '../../assets/di-pietro-engine.png'
+      on ? '../../../assets/di-pietro-engine.gif' : '../../../assets/di-pietro-engine.png'
     const s = document.getElementById('machine-status')
-    s.textContent = on ? 'ON' : 'OFF'
-    s.className = 'status ' + (on ? 'on' : 'off')
+    s.textContent = on ? 'ON' : 'OFF'; s.className = 'status ' + (on ? 'on' : 'off')
   }
-
   function renderTemperature(level) {
     document.getElementById('thermo-img').src = THERMOS[level]
     const s = document.getElementById('thermo-status')
-    s.textContent = level.toUpperCase()
-    s.className = 'status ' + level
+    s.textContent = level.toUpperCase(); s.className = 'status ' + level
   }
-
   function renderCooler(on) {
     document.getElementById('cooler-img').src =
-      on ? '../../assets/evaporative-cooling.gif' : '../../assets/evaporative-cooling.png'
+      on ? '../../../assets/evaporative-cooling.gif' : '../../../assets/evaporative-cooling.png'
     const s = document.getElementById('cooler-status')
-    s.textContent = on ? 'ON' : 'OFF'
-    s.className = 'status ' + (on ? 'on' : 'off')
+    s.textContent = on ? 'ON' : 'OFF'; s.className = 'status ' + (on ? 'on' : 'off')
   }
-
   function renderAlert(level) {
     document.getElementById('alert-img').src = ALERTS[level]
   }
 
-  // ─── THE KEY FUNCTION: defines all component correlations ─────────────────
   function setupCorrelations(switchEl) {
-
-    // 1. Click stream → boolean machine-on stream (toggles each click)
     const machineOn$ = fromEvent(switchEl, 'click').pipe(
       scan(on => !on, false),
       share()
     )
-
-    // 2. Machine-on stream → temperature stream
-    //    When on: emit low/medium/high every 10 s; when off: reset to low
     const temperature$ = machineOn$.pipe(
       switchMap(on => on
         ? timer(0, 10000).pipe(take(3), map(t => LEVELS[t]))
@@ -167,11 +151,8 @@
       ),
       share()
     )
-
-    // 3. Derived streams: cooler on when temperature is high
     const coolerOn$ = temperature$.pipe(map(t => t === 'high'))
 
-    // 4. Subscribe: connect each stream to its renderer
     machineOn$  .subscribe(on => { renderMachine(on); renderSwitch(on) })
     temperature$.subscribe(t  =>   renderTemperature(t))
     coolerOn$   .subscribe(on =>   renderCooler(on))

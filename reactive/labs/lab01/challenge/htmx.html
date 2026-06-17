@@ -3,59 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SCADA — HTMX Exercise</title>
-  <link rel="stylesheet" href="scada.css">
+  <title>SCADA — HTMX Challenge</title>
+  <link rel="stylesheet" href="../scada.css">
   <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
   <style>
     .ex-panel { margin: 0 24px 24px; }
-    .fn-wrap {
-      background: #0d1117;
-      border: 1px solid #1e293b;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-    .fn-sig {
-      background: #1e293b;
-      padding: 8px 16px;
-      font: 0.75rem/1.5 'Courier New', monospace;
-      color: #82aaff;
-      white-space: pre;
-    }
+    .fn-wrap { background: #0d1117; border: 1px solid #1e293b; border-radius: 8px; overflow: hidden; }
+    .fn-sig { background: #1e293b; padding: 8px 16px; font: 0.75rem/1.5 'Courier New', monospace; color: #82aaff; white-space: pre; }
     textarea#code {
-      display: block;
-      width: 100%;
-      min-height: 220px;
-      background: #0d1117;
-      color: #c9d1d9;
+      display: block; width: 100%; min-height: 220px;
+      background: #0d1117; color: #c9d1d9;
       font: 0.75rem/1.65 'Courier New', monospace;
       border: none;
       border-top: 1px dashed #1e293b;
       border-bottom: 1px dashed #1e293b;
-      padding: 12px 16px;
-      resize: vertical;
-      outline: none;
-      tab-size: 2;
+      padding: 12px 16px; resize: vertical; outline: none; tab-size: 2;
     }
-    .fn-close {
-      background: #1e293b;
-      padding: 8px 16px;
-      font: 0.75rem/1.5 'Courier New', monospace;
-      color: #82aaff;
-    }
-    .controls {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      padding: 12px 0 0;
-    }
-    .btn {
-      padding: 7px 18px;
-      border: none;
-      border-radius: 5px;
-      font: 0.8rem 'Courier New', monospace;
-      cursor: pointer;
-      letter-spacing: 0.5px;
-    }
+    .fn-close { background: #1e293b; padding: 8px 16px; font: 0.75rem/1.5 'Courier New', monospace; color: #82aaff; }
+    .controls { display: flex; gap: 10px; align-items: center; padding: 12px 0 0; }
+    .btn { padding: 7px 18px; border: none; border-radius: 5px; font: 0.8rem 'Courier New', monospace; cursor: pointer; letter-spacing: 0.5px; }
     .btn-run   { background: #1565c0; color: #fff; }
     .btn-run:hover { background: #1976d2; }
     .btn-reset { background: #263238; color: #90a4ae; }
@@ -63,25 +29,10 @@
     #status { font-size: 0.75rem; font-family: 'Courier New', monospace; }
     .ok  { color: #a5d6a7; }
     .err { color: #ef9a9a; }
-
     details.hints { margin-top: 16px; }
-    details.hints summary {
-      font-size: 0.75rem;
-      color: #546e7a;
-      cursor: pointer;
-      letter-spacing: 1px;
-      user-select: none;
-    }
+    details.hints summary { font-size: 0.75rem; color: #546e7a; cursor: pointer; letter-spacing: 1px; user-select: none; }
     details.hints summary:hover { color: #90a4ae; }
-    .hints-body {
-      margin-top: 10px;
-      background: #0d1117;
-      border: 1px solid #1e293b;
-      border-radius: 6px;
-      padding: 14px 16px;
-      font: 0.72rem/1.8 'Courier New', monospace;
-      color: #546e7a;
-    }
+    .hints-body { margin-top: 10px; background: #0d1117; border: 1px solid #1e293b; border-radius: 6px; padding: 14px 16px; font: 0.72rem/1.8 'Courier New', monospace; color: #546e7a; }
     .hints-body .hl  { color: #ffcb6b; }
     .hints-body .fn  { color: #82aaff; }
     .hints-body .str { color: #c3e88d; }
@@ -92,7 +43,7 @@
 <body>
   <header>
     <div>
-      <h1>SCADA SIMULATION — EXERCISE</h1>
+      <h1>SCADA SIMULATION — CHALLENGE</h1>
       <p>Implement <code style="color:#ffcb6b">setupCorrelations()</code> to wire the components together</p>
     </div>
     <span class="approach-badge htmx">EVENT-BASED · HTMX</span>
@@ -100,12 +51,12 @@
 
   <nav class="nav">
     <a href="index.html">← Back</a>
-    <a href="htmx.html">Solution</a>
-    <a href="vue-ex.html">Vue ✎</a>
-    <a href="rxjs-ex.html">RxJS ✎</a>
+    <a href="htmx.html" class="htmx">HTMX</a>
+    <a href="vue.html">Vue</a>
+    <a href="rxjs.html">RxJS</a>
+    <a href="../solution/htmx.html" style="margin-left:auto;color:#546e7a">View solution →</a>
   </nav>
 
-  <!-- ─── Simulation ──────────────────────────────────────────────── -->
   <div class="scada-panel">
     <div class="panel-title">INDUSTRIAL PLANT CONTROL PANEL</div>
     <div class="components-grid">
@@ -113,7 +64,7 @@
       <div class="component-card switch-card">
         <div class="label">Switch</div>
         <img id="switch-img"
-             src="../../assets/switch-off.png"
+             src="../../../assets/switch-off.png"
              hx-on:click="htmx.trigger(document.body, 'switch:clicked')"
              alt="switch">
         <div id="switch-status" class="status off">OFF</div>
@@ -121,48 +72,34 @@
 
       <div class="component-card">
         <div class="label">Machine</div>
-        <img id="machine-img" src="../../assets/di-pietro-engine.png" alt="machine">
+        <img id="machine-img" src="../../../assets/di-pietro-engine.png" alt="machine">
         <div id="machine-status" class="status off">OFF</div>
       </div>
 
       <div class="component-card">
         <div class="label">Temperature</div>
-        <img id="thermo-img" src="../../assets/thermometer-a.svg" class="tall" alt="thermometer">
+        <img id="thermo-img" src="../../../assets/thermometer-a.svg" class="tall" alt="thermometer">
         <div id="thermo-status" class="status low">LOW</div>
       </div>
 
       <div class="component-card">
         <div class="label">Alert</div>
-        <img id="alert-img" src="../../assets/light-green.svg" style="width:64px;height:64px" alt="alert light">
+        <img id="alert-img" src="../../../assets/light-green.svg" style="width:64px;height:64px" alt="alert light">
       </div>
 
       <div class="component-card">
         <div class="label">Cooler</div>
-        <img id="cooler-img" src="../../assets/evaporative-cooling.png" alt="cooler">
+        <img id="cooler-img" src="../../../assets/evaporative-cooling.png" alt="cooler">
         <div id="cooler-status" class="status off">OFF</div>
       </div>
 
     </div>
   </div>
 
-  <!-- ─── Exercise editor ─────────────────────────────────────────── -->
   <div class="ex-panel">
     <div class="fn-wrap">
       <div class="fn-sig">function setupCorrelations() {</div>
-      <textarea id="code" spellcheck="false">  // 1. When switch is clicked → toggle machine state
-  on('switch:clicked', () => {
-
-  })
-
-  // 2. When machine changes → start or stop temperature rise
-  on('machine:changed', ({ detail }) => {
-
-  })
-
-  // 3. When temperature changes → update cooler and alert
-  on('temperature:changed', ({ detail }) => {
-
-  })</textarea>
+      <textarea id="code" spellcheck="false"></textarea>
       <div class="fn-close">}</div>
     </div>
 
@@ -186,11 +123,11 @@
             — stop the timer and reset temperature to <span class="str">'low'</span><br>
         <br>
         <h4>Event names and detail shapes:</h4>
-        <span class="str">'switch:clicked'</span>      <span class="cm">— { }                        (fired when switch image is clicked)</span><br>
-        <span class="str">'machine:changed'</span>     <span class="cm">— { on: boolean }             (emit this to update machine visuals)</span><br>
-        <span class="str">'temperature:changed'</span> <span class="cm">— { level: string }           (fired by startTemperatureRise)</span><br>
-        <span class="str">'cooler:changed'</span>      <span class="cm">— { on: boolean }             (emit this to update cooler visuals)</span><br>
-        <span class="str">'alert:changed'</span>       <span class="cm">— { level: string }           (emit this to update alert light)</span><br>
+        <span class="str">'switch:clicked'</span>      <span class="cm">— { }                 (fired when switch image is clicked)</span><br>
+        <span class="str">'machine:changed'</span>     <span class="cm">— { on: boolean }     (emit this to update machine visuals)</span><br>
+        <span class="str">'temperature:changed'</span> <span class="cm">— { level: string }   (fired by startTemperatureRise)</span><br>
+        <span class="str">'cooler:changed'</span>      <span class="cm">— { on: boolean }     (emit this to update cooler visuals)</span><br>
+        <span class="str">'alert:changed'</span>       <span class="cm">— { level: string }   (emit this to update alert light)</span><br>
         <br>
         <h4>Level values:</h4>
         <span class="hl">LEVELS</span> = [<span class="str">'low'</span>, <span class="str">'medium'</span>, <span class="str">'high'</span>]
@@ -199,30 +136,28 @@
   </div>
 
   <script>
-  // ─── Simulation state ────────────────────────────────────────────────────
   let machineOn = false
   let tempLevel = 0
   let tempTimer = null
 
   const LEVELS  = ['low', 'medium', 'high']
-  const THERMOS = ['../../assets/thermometer-a.svg',
-                   '../../assets/thermometer-b.svg',
-                   '../../assets/thermometer-c.svg']
-  const LIGHTS  = ['../../assets/light-green.svg',
-                   '../../assets/light-yellow.svg',
-                   '../../assets/light-red.svg']
+  const THERMOS = ['../../../assets/thermometer-a.svg',
+                   '../../../assets/thermometer-b.svg',
+                   '../../../assets/thermometer-c.svg']
+  const LIGHTS  = ['../../../assets/light-green.svg',
+                   '../../../assets/light-yellow.svg',
+                   '../../../assets/light-red.svg']
 
-  // ─── Renderers ───────────────────────────────────────────────────────────
   function renderSwitch(on) {
     document.getElementById('switch-img').src =
-      on ? '../../assets/switch-on.png' : '../../assets/switch-off.png'
+      on ? '../../../assets/switch-on.png' : '../../../assets/switch-off.png'
     const s = document.getElementById('switch-status')
     s.textContent = on ? 'ON' : 'OFF'
     s.className = 'status ' + (on ? 'on' : 'off')
   }
   function renderMachine(on) {
     document.getElementById('machine-img').src =
-      on ? '../../assets/di-pietro-engine.gif' : '../../assets/di-pietro-engine.png'
+      on ? '../../../assets/di-pietro-engine.gif' : '../../../assets/di-pietro-engine.png'
     const s = document.getElementById('machine-status')
     s.textContent = on ? 'ON' : 'OFF'
     s.className = 'status ' + (on ? 'on' : 'off')
@@ -236,7 +171,7 @@
   }
   function renderCooler(on) {
     document.getElementById('cooler-img').src =
-      on ? '../../assets/evaporative-cooling.gif' : '../../assets/evaporative-cooling.png'
+      on ? '../../../assets/evaporative-cooling.gif' : '../../../assets/evaporative-cooling.png'
     const s = document.getElementById('cooler-status')
     s.textContent = on ? 'ON' : 'OFF'
     s.className = 'status ' + (on ? 'on' : 'off')
@@ -245,61 +180,46 @@
     document.getElementById('alert-img').src = LIGHTS[LEVELS.indexOf(level)]
   }
 
-  // ─── Permanent renderer listeners (never removed) ────────────────────────
+  // Permanent renderer listeners (never removed)
   document.body.addEventListener('machine:changed',     ({ detail }) => { renderSwitch(detail.on); renderMachine(detail.on) })
   document.body.addEventListener('temperature:changed', ({ detail }) => renderTemperature(detail.level))
   document.body.addEventListener('cooler:changed',      ({ detail }) => renderCooler(detail.on))
   document.body.addEventListener('alert:changed',       ({ detail }) => renderAlert(detail.level))
 
-  // ─── Student-scoped event helpers (reset between runs) ───────────────────
+  // Student-scoped helpers — AbortController lets us cancel all student listeners on Reset
   let studentController = new AbortController()
 
-  // These are the functions exposed to student code
   window.on   = (name, fn) => document.body.addEventListener(name, fn, { signal: studentController.signal })
   window.emit = (name, detail) => htmx.trigger(document.body, name, detail)
 
-  // ─── Temperature helpers (exposed to student code) ───────────────────────
   window.startTemperatureRise = function () {
-    machineOn = true
-    tempLevel = 0
+    machineOn = true; tempLevel = 0
     emit('temperature:changed', { level: LEVELS[tempLevel] })
     tempTimer = setInterval(() => {
-      if (tempLevel < 2) {
-        tempLevel++
-        emit('temperature:changed', { level: LEVELS[tempLevel] })
-      }
+      if (tempLevel < 2) { tempLevel++; emit('temperature:changed', { level: LEVELS[tempLevel] }) }
     }, 10000)
   }
-
   window.resetTemperature = function () {
-    clearInterval(tempTimer)
-    machineOn = false
-    tempLevel = 0
+    clearInterval(tempTimer); machineOn = false; tempLevel = 0
     emit('temperature:changed', { level: LEVELS[tempLevel] })
   }
-
   window.LEVELS = LEVELS
 
-  // ─── Reset simulation ────────────────────────────────────────────────────
   function resetSim() {
     studentController.abort()
     studentController = new AbortController()
     window.on = (name, fn) => document.body.addEventListener(name, fn, { signal: studentController.signal })
-    clearInterval(tempTimer)
-    machineOn = false
-    tempLevel = 0
+    clearInterval(tempTimer); machineOn = false; tempLevel = 0
     renderSwitch(false); renderMachine(false)
     renderTemperature('low'); renderCooler(false); renderAlert('low')
     showStatus('')
   }
 
-  // ─── Run student code ────────────────────────────────────────────────────
   function runCode() {
     const body = document.getElementById('code').value
     try {
       resetSim()
-      const fn = new Function(body)
-      fn()
+      new Function(body)()
       showStatus('ok', '✓ Running — click the switch to test')
     } catch (e) {
       showStatus('err', '✗ ' + e.message)
@@ -308,19 +228,15 @@
 
   function showStatus(cls, msg = '') {
     const el = document.getElementById('status')
-    el.textContent = msg
-    el.className = cls
+    el.textContent = msg; el.className = cls
   }
 
-  // ─── Tab key in textarea ─────────────────────────────────────────────────
   document.getElementById('code').addEventListener('keydown', e => {
-    if (e.key === 'Tab') {
-      e.preventDefault()
-      const t = e.target
-      const s = t.selectionStart
-      t.value = t.value.slice(0, s) + '  ' + t.value.slice(t.selectionEnd)
-      t.selectionStart = t.selectionEnd = s + 2
-    }
+    if (e.key !== 'Tab') return
+    e.preventDefault()
+    const t = e.target, s = t.selectionStart
+    t.value = t.value.slice(0, s) + '  ' + t.value.slice(t.selectionEnd)
+    t.selectionStart = t.selectionEnd = s + 2
   })
   </script>
 </body>

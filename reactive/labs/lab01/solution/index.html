@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCADA — Solutions</title>
+  <link rel="stylesheet" href="../scada.css">
+  <style>
+    .intro { max-width: 680px; margin: 28px auto 0; padding: 0 24px; line-height: 1.75; color: #90a4ae; font-size: 0.85rem; }
+    .intro h2 { color: #4fc3f7; margin-bottom: 8px; font-size: 0.95rem; letter-spacing: 1px; }
+    .intro p  { margin-bottom: 8px; }
+    .intro strong { color: #ffcb6b; }
+    .cards { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; padding: 28px 24px 48px; }
+    .card {
+      background: #16213e; border: 1px solid #0f3460; border-radius: 10px;
+      padding: 28px 24px; width: 230px; text-align: center;
+      text-decoration: none; color: inherit;
+      transition: transform 0.2s, border-color 0.2s;
+      display: flex; flex-direction: column; gap: 10px; align-items: center;
+    }
+    .card:hover { transform: translateY(-4px); }
+    .card.htmx:hover { border-color: #4fc3f7; }
+    .card.vue:hover  { border-color: #a5d6a7; }
+    .card.rxjs:hover { border-color: #ce93d8; }
+    .card h2 { font-size: 1rem; color: #e0e0e0; }
+    .card p  { font-size: 0.75rem; color: #546e7a; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>SCADA SOLUTIONS</h1>
+      <p>Reference implementations — study <code style="color:#ffcb6b">setupCorrelations()</code> in each approach</p>
+    </div>
+  </header>
+
+  <nav class="nav">
+    <a href="../index.html">← Back to lab</a>
+    <a href="../challenge/index.html" style="margin-left:auto;color:#546e7a">Challenges →</a>
+  </nav>
+
+  <div class="intro">
+    <h2>How to read these solutions</h2>
+    <p>Each page shows the running simulation with <strong>setupCorrelations()</strong> fully implemented and displayed in a code panel at the bottom. The function is the only place where component relationships are defined — everything else is rendering infrastructure.</p>
+    <p>Compare the three versions to see how the same correlations are expressed differently across paradigms.</p>
+  </div>
+
+  <div class="cards">
+    <a href="htmx.html" class="card htmx">
+      <span class="approach-badge htmx">EVENT-BASED</span>
+      <h2>HTMX</h2>
+      <p>Correlations defined as a chain of event listeners using <code>on()</code> and <code>emit()</code>.</p>
+    </a>
+
+    <a href="vue.html" class="card vue">
+      <span class="approach-badge vue">STATE-BASED</span>
+      <h2>Vue</h2>
+      <p>Correlations expressed as <code>computed()</code> derivations and a <code>watch()</code> for side effects.</p>
+    </a>
+
+    <a href="rxjs.html" class="card rxjs">
+      <span class="approach-badge rxjs">STREAM-BASED</span>
+      <h2>RxJS</h2>
+      <p>Correlations built as a stream pipeline — each component is an observable derived from the previous.</p>
+    </a>
+  </div>
+</body>
+</html>
