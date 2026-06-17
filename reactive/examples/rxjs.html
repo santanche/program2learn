@@ -3,21 +3,21 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>RxJS Lab v2</title>
+  <title>RxJS Lab v3 (Comparável)</title>
   <script src="https://unpkg.com/rxjs@7/dist/bundles/rxjs.umd.min.js"></script>
   <style>
     body { font-family: Arial; margin: 20px; }
     .cell { border: 1px solid #ccc; padding: 12px; margin-bottom: 25px; }
-    textarea { width: 100%; height: 140px; font-family: monospace; }
+    textarea { width: 100%; height: 120px; font-family: monospace; }
     button { margin: 5px 5px 5px 0; }
-    .output { background: #111; color: #0f0; padding: 10px; min-height: 50px; }
+    .output { background: #f5f5f5; padding: 10px; min-height: 30px; }
     .pipeline { font-family: monospace; color: #555; margin-bottom: 8px; }
-    h2 { margin-top: 0; }
+    .result { font-weight: bold; color: #333; }
   </style>
 </head>
 <body>
 
-<h1>🌊 RxJS Interactive Lab v2</h1>
+<h1>🌊 RxJS Lab v3 — Comparável com Vue / HTMX</h1>
 
 <script>
 const { fromEvent, interval, of } = rxjs;
@@ -30,17 +30,12 @@ function runCode(id) {
 
   const code = document.getElementById(id).value;
   const output = document.getElementById(id + "-out");
-  output.innerHTML = "";
-
-  const log = (msg) => {
-    output.innerHTML += msg + "<br>";
-  };
 
   try {
     const sub = eval(`(function(){ ${code} })()`);
     if (sub) subscriptions[id] = sub;
   } catch (e) {
-    log("Erro: " + e.message);
+    output.innerText = "Erro: " + e.message;
   }
 }
 
@@ -55,106 +50,126 @@ function stopCode(id) {
 <!-- EXEMPLO 1 -->
 
 <div class="cell">
-<h2>1. Stream de eventos (click independente)</h2>
+<h2>1. Clique → mensagem</h2>
 
-<div class="pipeline">click$ → subscribe</div>
+<div class="pipeline">click → subscribe → DOM</div>
 
-<button id="btn1">Clique aqui (Ex1)</button>
+<button id="btn1">Clique</button>
+
+<div id="out1" class="output"></div>
 
 <textarea id="code1">
+const out = document.getElementById("out1");
+
 const click$ = fromEvent(document.getElementById("btn1"), "click");
 
 return click$.subscribe(() => {
-  log("Ex1: clicou!");
+  out.innerText = "Clicado!";
 });
 </textarea>
 
 <button onclick="runCode('code1')">Executar</button> <button onclick="stopCode('code1')">Parar</button>
 
-<div class="output" id="code1-out"></div>
 </div>
 
 <!-- EXEMPLO 2 -->
 
 <div class="cell">
-<h2>2. Transformação com map (contador independente)</h2>
+<h2>2. Clique → contador</h2>
 
-<div class="pipeline">click$ → map → count$ → subscribe</div>
+<div class="pipeline">click → map → DOM</div>
 
-<button id="btn2">Clique aqui (Ex2)</button>
+<button id="btn2">Clique</button>
+
+<div id="out2" class="output"></div>
 
 <textarea id="code2">
+const out = document.getElementById("out2");
+
 const click$ = fromEvent(document.getElementById("btn2"), "click");
 
 const count$ = click$.pipe(
   map((_, i) => i + 1)
 );
 
-return count$.subscribe(v => log("contador: " + v));
+return count$.subscribe(v => {
+  out.innerText = "Contador: " + v;
+});
 </textarea>
 
 <button onclick="runCode('code2')">Executar</button> <button onclick="stopCode('code2')">Parar</button>
 
-<div class="output" id="code2-out"></div>
 </div>
 
 <!-- EXEMPLO 3 -->
 
 <div class="cell">
-<h2>3. Stream de tempo (interval)</h2>
+<h2>3. Tempo → contador automático</h2>
 
-<div class="pipeline">interval → subscribe</div>
+<div class="pipeline">interval → DOM</div>
+
+<div id="out3" class="output"></div>
 
 <textarea id="code3">
+const out = document.getElementById("out3");
+
 const timer$ = interval(1000);
 
-return timer$.subscribe(v => log("tempo: " + v));
+return timer$.subscribe(v => {
+  out.innerText = "Tempo: " + v;
+});
 </textarea>
 
 <button onclick="runCode('code3')">Executar</button> <button onclick="stopCode('code3')">Parar</button>
 
-<div class="output" id="code3-out"></div>
 </div>
 
 <!-- EXEMPLO 4 -->
 
 <div class="cell">
-<h2>4. Debounce (digitação)</h2>
+<h2>4. Input → debounce → texto</h2>
 
-<div class="pipeline">keyup → debounceTime → map → subscribe</div>
+<div class="pipeline">keyup → debounce → map → DOM</div>
 
-<input id="input" placeholder="Digite algo..." />
+<input id="input1" placeholder="Digite..." />
+<div id="out4" class="output"></div>
 
 <textarea id="code4">
-const input$ = fromEvent(document.getElementById("input"), "keyup");
+const out = document.getElementById("out4");
 
-const busca$ = input$.pipe(
+const input$ = fromEvent(document.getElementById("input1"), "keyup");
+
+const text$ = input$.pipe(
   debounceTime(500),
   map(e => e.target.value)
 );
 
-return busca$.subscribe(v => log("busca: " + v));
+return text$.subscribe(v => {
+  out.innerText = "Busca: " + v;
+});
 </textarea>
 
 <button onclick="runCode('code4')">Executar</button> <button onclick="stopCode('code4')">Parar</button>
 
-<div class="output" id="code4-out"></div>
 </div>
 
 <!-- EXEMPLO 5 -->
 
 <div class="cell">
-<h2>5. switchMap (simulação de API)</h2>
+<h2>5. Input → switchMap → “API”</h2>
 
-<div class="pipeline">keyup → debounce → switchMap → API → subscribe</div>
+<div class="pipeline">keyup → debounce → switchMap → DOM</div>
 
-<input id="input2" placeholder="Buscar algo..." />
+<input id="input2" placeholder="Buscar..." />
+<div id="out5" class="output"></div>
 
 <textarea id="code5">
+const out = document.getElementById("out5");
+
 const input$ = fromEvent(document.getElementById("input2"), "keyup");
 
-const fakeApi = (query) => {
-  return of("resultado para: " + query).pipe(delay(800));
+const fakeApi = (q) => {
+  return of("Resultado para: " + q).pipe(delay(800));
 };
 
 const result$ = input$.pipe(
@@ -163,12 +178,13 @@ const result$ = input$.pipe(
   switchMap(q => fakeApi(q))
 );
 
-return result$.subscribe(v => log(v));
+return result$.subscribe(v => {
+  out.innerText = v;
+});
 </textarea>
 
 <button onclick="runCode('code5')">Executar</button> <button onclick="stopCode('code5')">Parar</button>
 
-<div class="output" id="code5-out"></div>
 </div>
 
 </body>
