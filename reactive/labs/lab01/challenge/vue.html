@@ -64,8 +64,8 @@
 
         <div class="component-card switch-card">
           <div class="label">Switch</div>
-          <img :src="switchImg" @click="toggleMachine" alt="switch">
-          <div :class="['status', machineOn ? 'on' : 'off']">{{ machineOn ? 'ON' : 'OFF' }}</div>
+          <img :src="switchImg" @click="toggleSwitch" alt="switch">
+          <div :class="['status', switchOn ? 'on' : 'off']">{{ switchOn ? 'ON' : 'OFF' }}</div>
         </div>
 
         <div class="component-card">
@@ -97,8 +97,8 @@
 
   <div class="ex-panel">
     <div class="fn-wrap">
-      <div class="fn-sig">function setupCorrelations(machineOn, tempLevel, coolerOn) {
-  // machineOn, tempLevel, coolerOn  are Vue refs — read with .value, write with .value = ...</div>
+      <div class="fn-sig">function setupCorrelations(switchOn, machineOn, tempLevel, coolerOn) {
+  // All four are Vue refs — read with .value, write with .value = ...</div>
       <textarea id="code" spellcheck="false"></textarea>
       <div class="fn-close">}</div>
     </div>
@@ -119,8 +119,9 @@
             — also run handler immediately on setup<br>
         <br>
         <h4>Reactive state passed as arguments:</h4>
-        <span class="hl">machineOn</span>  <span class="cm">ref&lt;boolean&gt;  — read/write: machineOn.value</span><br>
-        <span class="hl">tempLevel</span>  <span class="cm">ref&lt;string&gt;   — 'low' | 'medium' | 'high'</span><br>
+        <span class="hl">switchOn</span>   <span class="cm">ref&lt;boolean&gt;  — true when switch is in ON position (toggled by clicking)</span><br>
+        <span class="hl">machineOn</span>  <span class="cm">ref&lt;boolean&gt;  — you must keep this in sync with switchOn</span><br>
+        <span class="hl">tempLevel</span>  <span class="cm">ref&lt;string&gt;   — 'low' | 'medium' | 'high'  (managed by the temperature helpers)</span><br>
         <span class="hl">coolerOn</span>   <span class="cm">ref&lt;boolean&gt;  — you must keep this in sync with tempLevel</span><br>
         <br>
         <h4>Helper functions:</h4>
@@ -150,13 +151,16 @@
     high:   '../../../assets/light-red.svg',
   }
 
+  // switchOn is the physical switch position — toggled by clicking; NOT wired to the machine yet
+  const switchOn  = ref(false)
   const machineOn = ref(false)
   const tempLevel = ref('low')
   const coolerOn  = ref(false)
 
-  const switchImg  = computed(() => machineOn.value ? '../../../assets/switch-on.png'           : '../../../assets/switch-off.png')
-  const machineImg = computed(() => machineOn.value ? '../../../assets/di-pietro-engine.gif'    : '../../../assets/di-pietro-engine.png')
-  const coolerImg  = computed(() => coolerOn.value  ? '../../../assets/evaporative-cooling.gif' : '../../../assets/evaporative-cooling.png')
+  // Visual-only computed props: map state → image paths (rendering infrastructure, not correlations)
+  const switchImg  = computed(() => switchOn.value  ? '../../../assets/switch-on.png'            : '../../../assets/switch-off.png')
+  const machineImg = computed(() => machineOn.value ? '../../../assets/di-pietro-engine.gif'     : '../../../assets/di-pietro-engine.png')
+  const coolerImg  = computed(() => coolerOn.value  ? '../../../assets/evaporative-cooling.gif'  : '../../../assets/evaporative-cooling.png')
   const thermoImg  = computed(() => THERMOS[tempLevel.value])
   const alertImg   = computed(() => ALERTS[tempLevel.value])
 
@@ -176,15 +180,16 @@
   Vue.createApp({
     setup() {
       return {
-        machineOn, tempLevel, coolerOn,
+        switchOn, machineOn, tempLevel, coolerOn,
         switchImg, machineImg, coolerImg, thermoImg, alertImg,
-        toggleMachine: () => { machineOn.value = !machineOn.value },
+        toggleSwitch: () => { switchOn.value = !switchOn.value },
       }
     }
   }).mount('#app')
 
   window.watch    = watch
   window.computed = computed
+  window.switchOn  = switchOn
   window.machineOn = machineOn
   window.tempLevel = tempLevel
   window.coolerOn  = coolerOn
@@ -199,6 +204,7 @@
     if (scope) scope.stop()
     scope = null
     clearInterval(tempTimer)
+    switchOn.value  = false
     machineOn.value = false
     tempLevel.value = 'low'
     coolerOn.value  = false
@@ -212,13 +218,13 @@
       scope = effectScope()
       scope.run(() => {
         const fn = new Function(
-          'machineOn', 'tempLevel', 'coolerOn',
+          'switchOn', 'machineOn', 'tempLevel', 'coolerOn',
           'watch', 'computed',
           'startTemperatureRise', 'resetTemperature',
           'THERMOS', 'ALERTS',
           body
         )
-        fn(machineOn, tempLevel, coolerOn,
+        fn(switchOn, machineOn, tempLevel, coolerOn,
            watch, computed,
            startTemperatureRise, resetTemperature,
            THERMOS, ALERTS)
