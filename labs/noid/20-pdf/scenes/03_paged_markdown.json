@@ -1,0 +1,48 @@
+{
+  "title": "PDF page-by-page — PyMuPDF → postprocess (page_by_page) → file",
+  "imports": [
+    "noid_collections.pdf.extractor_pymupdf.extractor_pymupdf",
+    "noid_collections.pdf.postprocessor.postprocessor",
+    "noid_collections.data.file_writer.file_writer",
+    "noid_collections.basic.console_display.console_display"
+  ],
+  "components": [
+    {
+      "type": "pdf:extractor-pymupdf",
+      "id":   "extractor",
+      "properties": {
+        "input_file":   "scenes/pdf/ulisses_james_joyce.pdf",
+        "output_mode":  "page_by_page",
+        "auto_extract": true
+      },
+      "publish": "page~pipeline/page;done~pipeline/done;status~pipeline/status"
+    },
+    {
+      "type": "pdf:postprocessor",
+      "id":   "postproc",
+      "properties": {
+        "source":      "pymupdf",
+        "format":      "markdown",
+        "output_mode": "page_by_page"
+      },
+      "subscribe": "pipeline/page~page;pipeline/done~done",
+      "publish":   "page~pipeline/clean-page;done~pipeline/clean-done;status~pipeline/status"
+    },
+    {
+      "type": "data:file-writer",
+      "id":   "writer",
+      "properties": {
+        "output_file":    "output/ulisses_james_joyce_pymupdf_paged.md",
+        "page_separator": "\n\n"
+      },
+      "subscribe": "pipeline/clean-page~page;pipeline/clean-done~done",
+      "publish":   "written~player/done"
+    },
+    {
+      "type": "basic:console-display",
+      "id":   "progress",
+      "properties": {"label": "Progress", "pretty": false},
+      "subscribe": "pipeline/status~show;pipeline/error~show"
+    }
+  ]
+}

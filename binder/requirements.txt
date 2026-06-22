@@ -1,2 +1,4 @@
 notebook
 jupyterlab
+mundorum-noid
+mundorum-noid-collections[pdf]

@@ -1,0 +1,35 @@
+{
+  "title": "PDF text extraction — PyMuPDF → file",
+  "imports": [
+    "noid_collections.pdf.extractor_pymupdf.extractor_pymupdf",
+    "noid_collections.data.file_writer.file_writer",
+    "noid_collections.basic.console_display.console_display"
+  ],
+  "components": [
+    {
+      "type": "pdf:extractor-pymupdf",
+      "id":   "extractor",
+      "properties": {
+        "input_file":   "scenes/pdf/ulisses_james_joyce.pdf",
+        "output_mode":  "complete",
+        "auto_extract": true
+      },
+      "publish": "text~pipeline/text;done~pipeline/done;error~pipeline/error;status~pipeline/status"
+    },
+    {
+      "type": "data:file-writer",
+      "id":   "writer",
+      "properties": {
+        "output_file": "output/ulisses-james-joyce.txt"
+      },
+      "subscribe": "pipeline/text~text;pipeline/done~done",
+      "publish":   "written~player/done"
+    },
+    {
+      "type": "basic:console-display",
+      "id":   "progress",
+      "properties": {"label": "Progress", "pretty": false},
+      "subscribe": "pipeline/status~show;pipeline/error~show"
+    }
+  ]
+}

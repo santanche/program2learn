@@ -18,3 +18,7 @@ libtool
 # Tools for downloading and cloning
 git
 wget
+
+# OCR support for ocrmypdf (used by noid-collections pdf extra)
+tesseract-ocr
+ghostscript

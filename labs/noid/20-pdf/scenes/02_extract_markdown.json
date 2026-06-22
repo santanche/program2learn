@@ -1,0 +1,45 @@
+{
+  "title": "PDF to markdown — PyMuPDF → postprocess → file",
+  "imports": [
+    "noid_collections.pdf.extractor_pymupdf.extractor_pymupdf",
+    "noid_collections.pdf.postprocessor.postprocessor",
+    "noid_collections.data.file_writer.file_writer",
+    "noid_collections.basic.console_display.console_display"
+  ],
+  "components": [
+    {
+      "type": "pdf:extractor-pymupdf",
+      "id":   "extractor",
+      "properties": {
+        "input_file":   "scenes/pdf/ulisses_james_joyce.pdf",
+        "auto_extract": true
+      },
+      "publish": "text~pipeline/text;done~pipeline/done;status~pipeline/status"
+    },
+    {
+      "type": "pdf:postprocessor",
+      "id":   "postproc",
+      "properties": {
+        "source": "pymupdf",
+        "format": "markdown"
+      },
+      "subscribe": "pipeline/text~text;pipeline/done~done",
+      "publish":   "text~pipeline/clean;done~pipeline/clean-done;status~pipeline/status"
+    },
+    {
+      "type": "data:file-writer",
+      "id":   "writer",
+      "properties": {
+        "output_file": "output/ulisses_james_joyce_pymupdf.md"
+      },
+      "subscribe": "pipeline/clean~text;pipeline/clean-done~done",
+      "publish":   "written~player/done"
+    },
+    {
+      "type": "basic:console-display",
+      "id":   "progress",
+      "properties": {"label": "Progress", "pretty": false},
+      "subscribe": "pipeline/status~show;pipeline/error~show"
+    }
+  ]
+}
